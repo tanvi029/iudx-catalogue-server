@@ -152,18 +152,18 @@ public class MlayerDataset {
         .onComplete(
             ar -> {
               if (ar.succeeded()) {
-                            JsonObject instanceList = ar.result().resultAt(0);
-                            JsonObject resourceGroupList = ar.result().resultAt(1);
-                            JsonObject resourceAndPolicyCount = ar.result().resultAt(2);
-                            JsonArray resourceGroupArray = new JsonArray();
-                            LOGGER.debug("getMlayerDatasets resourceGroupList iteration started");
-                            for (int i = 0;
-                                 i < resourceGroupList.getInteger("resourceGroupCount");
-                                 i++) {
-                              JsonObject record =
-                                  resourceGroupList.getJsonArray("resourceGroup").getJsonObject(i);
-                              record.put(
-                                  "icon",
+                JsonObject instanceList = ar.result().resultAt(0);
+                JsonObject resourceGroupList = ar.result().resultAt(1);
+                JsonObject resourceAndPolicyCount = ar.result().resultAt(2);
+                JsonArray resourceGroupArray = new JsonArray();
+                LOGGER.debug("getMlayerDatasets resourceGroupList iteration started");
+                for (int i = 0;
+                     i < resourceGroupList.getInteger("resourceGroupCount");
+                     i++) {
+                  JsonObject record =
+                          resourceGroupList.getJsonArray("resourceGroup").getJsonObject(i);
+                  record.put(
+                          "icon",
                       record.containsKey(INSTANCE)
                           ? instanceList.getString(record.getString(INSTANCE))
                           : "");
