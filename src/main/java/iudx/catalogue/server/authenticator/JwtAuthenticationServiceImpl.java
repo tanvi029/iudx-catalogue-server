@@ -80,8 +80,8 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     boolean isValidAudience;
     switch (itemType) {
       case ITEM_TYPE_PROVIDER:
-      case ITEM_TYPE_RESOURCE_GROUP:
-      case ITEM_TYPE_RESOURCE:
+   //   case ITEM_TYPE_RESOURCE_GROUP:
+   //   case ITEM_TYPE_RESOURCE:
         isValidAudience = serverUrl != null && serverUrl.equalsIgnoreCase(jwtData.getAud());
         break;
       case RATINGS:
@@ -284,11 +284,13 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
       case ITEM_TYPE_OWNER:
       case ITEM_TYPE_COS:
       case ITEM_TYPE_RESOURCE_SERVER:
+      case ITEM_TYPE_RESOURCE_GROUP:
+      case ITEM_TYPE_RESOURCE:
         isValidIid = type.equalsIgnoreCase("cos") && server.equalsIgnoreCase(issuer);
         break;
       case ITEM_TYPE_PROVIDER:
-      case ITEM_TYPE_RESOURCE_GROUP:
-      case ITEM_TYPE_RESOURCE:
+     // case ITEM_TYPE_RESOURCE_GROUP:
+   //   case ITEM_TYPE_RESOURCE:
         isValidIid = type.equalsIgnoreCase("rs") && server.equalsIgnoreCase(resourceServerRegUrl);
         break;
       default:
