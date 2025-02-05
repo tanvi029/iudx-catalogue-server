@@ -45,12 +45,14 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
   final String audience;
   final String consumerAudience;
   final String issuer;
+  final String dxApiBasePath;
 
   public JwtAuthenticationServiceImpl(final JWTAuth jwtAuth, final JsonObject config) {
     this.jwtAuth = jwtAuth;
     this.audience = config.getString("host");
     this.consumerAudience = config.getString("consumerHost");
     this.issuer = config.getString("issuer");
+    this.dxApiBasePath = config.getString("dxApiBasePath");
   }
 
   @Override
@@ -144,8 +146,10 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     return itemType;
   }
 
-  Future<Boolean> isValidAudienceValue(JwtData jwtData, String itemType, String serverUrl) {
+  public Future<Boolean> isValidAudienceValue(JwtData jwtData, String itemType, String serverUrl) {
+    Promise<Boolean> promise = Promise.promise();
     LOGGER.debug("itemType: " + itemType);
+
     LOGGER.debug("Audience in jwt is: " + jwtData.getAud());
     LOGGER.debug(serverUrl);
     LOGGER.debug(audience);
@@ -165,8 +169,6 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
         break;
     }
 
-    Promise<Boolean> promise = Promise.promise();
-
     if (isValidAudience) {
       promise.complete(true);
     } else {
@@ -176,7 +178,8 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     return promise.future();
   }
 
-  Future<Boolean> isValidProvider(JwtData jwtData, String provider) {
+  public Future<Boolean> isValidProvider(JwtData jwtData, String provider) {
+    Promise<Boolean> promise = Promise.promise();
 
     String jwtId = "";
     if (jwtData.getRole().equalsIgnoreCase(PROVIDER)) {
@@ -186,7 +189,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
         && jwtData.getDrl().equalsIgnoreCase(PROVIDER)) {
       jwtId = jwtData.getDid();
     }
-    Promise<Boolean> promise = Promise.promise();
+
     LOGGER.debug("provider: " + provider);
     LOGGER.debug("jwtid: " + jwtId);
     if (provider.equalsIgnoreCase(jwtId)) {
@@ -198,16 +201,16 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     return promise.future();
   }
 
-  Future<Boolean> isValidEndpoint(String endPoint) {
+  public Future<Boolean> isValidEndpoint(String endPoint) {
     Promise<Boolean> promise = Promise.promise();
 
     LOGGER.debug("Endpoint in JWt is : " + endPoint);
-    if (endPoint.equals(ROUTE_ITEMS)
-        || endPoint.equals(ROUTE_INSTANCE)
-        || endPoint.equals(RATINGS_ENDPOINT)
-        || endPoint.equals(ROUTE_MLAYER_INSTANCE)
-        || endPoint.equals(ROUTE_MLAYER_DOMAIN)
-        || endPoint.equals(ROUTE_STACK)) {
+    if (endPoint.equals(RATINGS_ENDPOINT)
+        || endPoint.equals(dxApiBasePath + ROUTE_ITEMS)
+        || endPoint.equals(dxApiBasePath + ROUTE_INSTANCE)
+        || endPoint.equals(dxApiBasePath + ROUTE_MLAYER_INSTANCE)
+        || endPoint.equals(dxApiBasePath + ROUTE_MLAYER_DOMAIN)
+        || endPoint.equals(dxApiBasePath + ROUTE_STACK)) {
       promise.complete(true);
     } else {
       LOGGER.error("Incorrect endpoint in jwt");
