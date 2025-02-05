@@ -16,9 +16,9 @@ import iudx.catalogue.server.authenticator.model.JwtData;
  */
 public class RoutingContextHelper {
 
-  private static final String JWT_DECODED_INFO = "jwtDecodedInfo";
-  private static final String JWT_AUTH_INFO_KEY = "jwtAuthenticationInfo";
-  private static final String VALIDATED_REQ_KEY = "validatedRequest";
+  public static final String JWT_DECODED_INFO = "jwtDecodedInfo";
+  public static final String JWT_AUTH_INFO_KEY = "jwtAuthenticationInfo";
+  public static final String VALIDATED_REQ_KEY = "validatedRequest";
 
   /**
    * Stores the JWT authentication information in the context.

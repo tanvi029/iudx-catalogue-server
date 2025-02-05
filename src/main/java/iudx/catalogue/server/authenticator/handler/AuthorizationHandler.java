@@ -95,7 +95,7 @@ public class AuthorizationHandler implements Handler<RoutingContext> {
   }
 
   /** Helper method to check if the entity is allowed for the given user role. */
-  private boolean isEntityAllowedForRole(DxRole userRole, String itemType) {
+  boolean isEntityAllowedForRole(DxRole userRole, String itemType) {
     Set<String> allowedEntities = roleEntityPermissions.get(userRole);
     return allowedEntities != null && allowedEntities.contains(itemType);
   }

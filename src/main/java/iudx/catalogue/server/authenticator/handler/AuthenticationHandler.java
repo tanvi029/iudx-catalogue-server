@@ -32,6 +32,7 @@ public class AuthenticationHandler implements Handler<RoutingContext> {
     if (!context.request().headers().contains(HEADER_TOKEN)) {
       LOGGER.warn("Fail: Unauthorized CRUD operation");
       context.response().setStatusCode(401).end();
+      return;
     }
     decodeToken(context)
         .compose(decodeToken -> checkIfTokenIsAuthenticated(context))
@@ -81,6 +82,7 @@ public class AuthenticationHandler implements Handler<RoutingContext> {
     if (failureMessage.equalsIgnoreCase("User information is invalid")) {
       LOGGER.error("User information is invalid");
       context.fail(new DxRuntimeException(HttpStatusCode.INTERNAL_SERVER_ERROR.getValue(), INTERNAL_SERVER_ERROR));
+      return;
     }
     context.fail(new DxRuntimeException(HttpStatusCode.INVALID_TOKEN_URN.getValue(),
         INVALID_TOKEN_URN, failureMessage));

@@ -212,7 +212,7 @@ public class RatingController {
     routingContext.next();
   }
 
-  private void validateSchema(RoutingContext routingContext) {
+  void validateSchema(RoutingContext routingContext) {
     LOGGER.debug("Info: Validating Schema");
 
     HttpServerResponse response = routingContext.response();
