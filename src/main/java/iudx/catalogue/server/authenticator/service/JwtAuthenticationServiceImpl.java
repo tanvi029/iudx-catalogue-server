@@ -206,7 +206,8 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
 
     LOGGER.debug("Endpoint in JWt is : " + endPoint);
     if (endPoint.equals(RATINGS_ENDPOINT)
-        || endPoint.equals(dxApiBasePath + ROUTE_ITEMS)
+        || endPoint.equals(dxApiBasePath + ROUTE_ITEMS + "/")
+        || endPoint.equals(dxApiBasePath + ROUTE_ITEMS) //delete endpoint
         || endPoint.equals(dxApiBasePath + ROUTE_INSTANCE)
         || endPoint.equals(dxApiBasePath + ROUTE_MLAYER_INSTANCE)
         || endPoint.equals(dxApiBasePath + ROUTE_MLAYER_DOMAIN)

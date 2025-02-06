@@ -209,7 +209,7 @@ public class CrudController {
         new JwtAuthenticationInfo.Builder()
             .setToken(request.getHeader(HEADER_TOKEN))
             .setMethod(method)
-            .setApiEndpoint(ROUTE_INSTANCE)
+            .setApiEndpoint(routingContext.normalizedPath())
             .setItemType(ITEM_TYPE_INSTANCE)
             .setId(host)
             .build();

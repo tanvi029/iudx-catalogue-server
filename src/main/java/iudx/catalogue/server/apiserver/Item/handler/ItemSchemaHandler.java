@@ -93,7 +93,7 @@ public class ItemSchemaHandler implements Handler<RoutingContext> {
     JwtAuthenticationInfo.Builder jwtAuthenticationInfo =
         new JwtAuthenticationInfo.Builder()
             .setToken(request.getHeader(HEADER_TOKEN))
-            .setApiEndpoint(ROUTE_ITEMS)
+            .setApiEndpoint(routingContext.normalizedPath())
             .setItemType(itemType);
     if (routingContext.request().method().toString().equals(REQUEST_POST)) {
       jwtAuthenticationInfo.setMethod(REQUEST_POST);

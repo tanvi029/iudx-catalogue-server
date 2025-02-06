@@ -158,7 +158,7 @@ public class StacController {
       JwtAuthenticationInfo jwtAuthenticationInfo = new JwtAuthenticationInfo.Builder()
           .setToken(request.getHeader(HEADER_TOKEN))
           .setMethod(method)
-          .setApiEndpoint(ROUTE_STACK)
+          .setApiEndpoint(routingContext.normalizedPath())
           .build();
       RoutingContextHelper.setJwtAuthInfo(routingContext, jwtAuthenticationInfo);
 
@@ -179,7 +179,7 @@ public class StacController {
         JwtAuthenticationInfo jwtAuthenticationInfo = new JwtAuthenticationInfo.Builder()
             .setToken(request.getHeader(HEADER_TOKEN))
             .setMethod(REQUEST_PATCH)
-            .setApiEndpoint(ROUTE_STACK)
+            .setApiEndpoint(routingContext.normalizedPath())
             .build();
         RoutingContextHelper.setJwtAuthInfo(routingContext, jwtAuthenticationInfo);
         routingContext.next();
