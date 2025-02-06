@@ -182,7 +182,7 @@ public class ItemLinkValidationHandler implements Handler<RoutingContext> {
         new JwtAuthenticationInfo.Builder()
             .setToken(request.getHeader(HEADER_TOKEN))
             .setMethod(REQUEST_DELETE)
-            .setApiEndpoint(ROUTE_ITEMS);
+            .setApiEndpoint(routingContext.normalizedPath());
 
     Future<JsonObject> itemTypeFuture = getParentObjectInfo(itemId);
     itemTypeFuture.onComplete(
