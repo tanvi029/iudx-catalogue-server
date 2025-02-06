@@ -9,7 +9,9 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import iudx.catalogue.server.databroker.DataBrokerService;
+import iudx.catalogue.server.auditing.service.AuditingService;
+import iudx.catalogue.server.auditing.service.AuditingServiceImpl;
+import iudx.catalogue.server.databroker.service.RabbitMQService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import io.vertx.junit5.VertxExtension;
@@ -53,7 +55,7 @@ public class AuditingServiceTest {
     databasePassword = dbConfig.getString("auditingDatabasePassword");
     databaseTableName = dbConfig.getString("auditingDatabaseTableName");
     databasePoolSize = dbConfig.getInteger("auditingPoolSize");
-    auditingService = new AuditingServiceImpl(dbConfig, vertxObj);
+    auditingService = new AuditingServiceImpl(databaseTableName, vertxObj);
     vertxTestContext.completeNow();
   }
 
@@ -94,10 +96,10 @@ public class AuditingServiceTest {
         request.put(EPOCH_TIME, 0.00);
         request.put(PRIMARY_KEY, "dummy primary key");
         request.put(ORIGIN, ORIGIN_SERVER);
-        AuditingServiceImpl auditingService = new AuditingServiceImpl(dbConfig, vertxObj);
+        AuditingServiceImpl auditingService = new AuditingServiceImpl(databaseTableName, vertxObj);
 
         AsyncResult<JsonObject> asyncResult = mock(AsyncResult.class);
-        AuditingServiceImpl.rmqService = mock(DataBrokerService.class);
+        AuditingServiceImpl.rmqService = mock(RabbitMQService.class);
 
         when(asyncResult.succeeded()).thenReturn(true);
         doAnswer(
@@ -109,11 +111,10 @@ public class AuditingServiceTest {
                     }
                 })
                 .when(auditingService.rmqService)
-                .publishMessage(any(), anyString(), anyString(), any());
+                .publishMessage(any(), anyString(), anyString());
 
-        auditingService.insertAuditngValuesInRmq(
-                request,
-                handler -> {
+        auditingService.insertAuditingValuesInRmq(request)
+            .onComplete(handler -> {
                     if (handler.succeeded()) {
                         vertxTestContext.completeNow();
                     } else {
@@ -121,6 +122,6 @@ public class AuditingServiceTest {
                     }
                 });
         verify(auditingService.rmqService, times(1))
-                .publishMessage(any(), anyString(), anyString(), any());
+                .publishMessage(any(), anyString(), anyString());
     }
 }

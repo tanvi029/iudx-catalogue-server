@@ -13,7 +13,10 @@ import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
-import iudx.catalogue.server.database.ElasticClient;
+import iudx.catalogue.server.database.elastic.ElasticClient;
+import iudx.catalogue.server.database.elastic.model.ElasticsearchResponse;
+import iudx.catalogue.server.database.elastic.service.ElasticsearchService;
+import iudx.catalogue.server.database.elastic.service.ElasticsearchServiceImpl;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -32,6 +35,7 @@ public class DataModelTest {
   MultiMap mockHeaders = mock(MultiMap.class);
   @Mock private WebClient webClient;
   @Mock private ElasticClient mockElasticClient;
+  private ElasticsearchService esService = new ElasticsearchServiceImpl(mockElasticClient);
   @Mock private HttpResponse<Buffer> mockHttpResponse;
   @Mock private HttpRequest<Buffer> mockHttpRequest;
   @Mock private Buffer mockBuffer;
@@ -40,7 +44,7 @@ public class DataModelTest {
   @BeforeEach
   void setUp() {
     MockitoAnnotations.openMocks(this);
-    dataModel = new DataModel(webClient, mockElasticClient, "test-index");
+    dataModel = new DataModel(webClient, esService, "test-index");
   }
 
   @Test
@@ -55,7 +59,7 @@ public class DataModelTest {
                             .put("@context", "https://example.com/")
                             .put("type", new JsonArray().add("dummy").add("iudx:Resource"))));
     // Mocking Elasticsearch client's async search
-    when(mockElasticClient.searchAsync(anyString(), anyString(), any()))
+    when(esService.search(anyString(), any()))
         .thenAnswer(
             invocation -> {
               ((Handler<AsyncResult<JsonObject>>) invocation.getArgument(2))
