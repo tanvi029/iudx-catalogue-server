@@ -13,6 +13,7 @@ import io.vertx.core.json.DecodeException;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import iudx.catalogue.server.exceptions.FailureHandler;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,7 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 @ExtendWith(VertxExtension.class)
-public class ExceptionHandlerTest {
+public class FailureHandlerTest {
     @Mock
     RoutingContext routingContext;
     @Mock
@@ -44,8 +45,8 @@ public class ExceptionHandlerTest {
         when(routingContext.response()).thenReturn(httpServerResponse);
         when(httpServerResponse.setStatusCode(400)).thenReturn(httpServerResponse);
         when(httpServerResponse.putHeader(anyString(), anyString())).thenReturn(httpServerResponse);
-        ExceptionHandler exceptionHandler = new ExceptionHandler();
-        exceptionHandler.handle(routingContext);
+        FailureHandler failureHandler = new FailureHandler();
+        failureHandler.handle(routingContext);
         vertxTestContext.completeNow();
     }
 
@@ -61,9 +62,9 @@ public class ExceptionHandlerTest {
         when(httpServerResponse.setStatusCode(anyInt())).thenReturn(httpServerResponse);
         when(httpServerResponse.putHeader(anyString(),anyString())).thenReturn(httpServerResponse);
         when(httpServerResponse.end(anyString())).thenReturn(voidFuture);
-        ExceptionHandler exceptionHandler=new ExceptionHandler();
+        FailureHandler failureHandler=new FailureHandler();
         assertEquals(ROUTE_ITEM,routingContext.request().uri());
-        exceptionHandler.handleDecodeException(routingContext);
+        failureHandler.handleDecodeException(routingContext);
         vertxTestContext.completeNow();
     }
 
@@ -80,9 +81,9 @@ public class ExceptionHandlerTest {
         when(httpServerResponse.setStatusCode(400)).thenReturn(httpServerResponse);
         when(httpServerResponse.putHeader(anyString(),anyString())).thenReturn(httpServerResponse);
         when(httpServerResponse.end(anyString())).thenReturn(voidFuture);
-        ExceptionHandler exceptionHandler=new ExceptionHandler();
+        FailureHandler FailureHandler=new FailureHandler();
         assertEquals(ROUTE_SEARCH,routingContext.request().uri());
-        exceptionHandler.handleDecodeException(routingContext);
+        FailureHandler.handleDecodeException(routingContext);
         vertxTestContext.completeNow();
     }
 
@@ -99,9 +100,9 @@ public class ExceptionHandlerTest {
         when(httpServerResponse.setStatusCode(400)).thenReturn(httpServerResponse);
         when(httpServerResponse.putHeader(anyString(),anyString())).thenReturn(httpServerResponse);
         when(httpServerResponse.end(anyString())).thenReturn(voidFuture);
-        ExceptionHandler exceptionHandler=new ExceptionHandler();
+        FailureHandler failureHandler=new FailureHandler();
         assertEquals("random",routingContext.request().uri());
-        exceptionHandler.handleDecodeException(routingContext);
+        failureHandler.handleDecodeException(routingContext);
         vertxTestContext.completeNow();
     }
 
@@ -115,8 +116,8 @@ public class ExceptionHandlerTest {
         when(httpServerResponse.putHeader(anyString(),anyString())).thenReturn(httpServerResponse);
         when(httpServerResponse.end(anyString())).thenReturn(voidFuture);
         assertEquals("dummy msg",routingContext.failure().getLocalizedMessage());
-        ExceptionHandler exceptionHandler=new ExceptionHandler();
-        exceptionHandler.handleClassCastException(routingContext);
+        FailureHandler FailureHandler=new FailureHandler();
+        FailureHandler.handleClassCastException(routingContext);
         vertxTestContext.completeNow();
     }
 
@@ -131,35 +132,35 @@ public class ExceptionHandlerTest {
         when(httpServerResponse.setStatusCode(400)).thenReturn(httpServerResponse);
         when(httpServerResponse.putHeader(HEADER_CONTENT_TYPE, MIME_APPLICATION_JSON)).thenReturn(httpServerResponse);
         when(httpServerResponse.end(anyString())).thenReturn(voidFuture);
-        ExceptionHandler exceptionHandler=new ExceptionHandler();
+        FailureHandler failureHandler=new FailureHandler();
         assertEquals(ROUTE_RATING,routingContext.request().uri());
-        exceptionHandler.handleDecodeException(routingContext);
+        failureHandler.handleDecodeException(routingContext);
         vertxTestContext.completeNow();
     }
 
     @Test
     @DisplayName("Test handleClassCastException method")
     public void testHandleDecodeException(VertxTestContext vertxTestContext) {
-        ExceptionHandler exceptionHandler=new ExceptionHandler();
+        FailureHandler failureHandler=new FailureHandler();
         when(routingContext.failure()).thenReturn(decodeException);
         when(routingContext.response()).thenReturn(httpServerResponse);
         when(httpServerResponse.setStatusCode(400)).thenReturn(httpServerResponse);
         when(httpServerResponse.putHeader(HEADER_CONTENT_TYPE, MIME_APPLICATION_JSON)).thenReturn(httpServerResponse);
         when(httpServerResponse.end(anyString())).thenReturn(voidFuture);
-       exceptionHandler.handle(routingContext);
+        failureHandler.handle(routingContext);
         vertxTestContext.completeNow();
     }
 
     @Test
     @DisplayName("Test handleClassCastException method")
     public void testClassCastException(VertxTestContext vertxTestContext) {
-        ExceptionHandler exceptionHandler=new ExceptionHandler();
+        FailureHandler failureHandler=new FailureHandler();
         when(routingContext.failure()).thenReturn(classCastException);
         when(routingContext.response()).thenReturn(httpServerResponse);
         when(httpServerResponse.setStatusCode(400)).thenReturn(httpServerResponse);
         when(httpServerResponse.putHeader(HEADER_CONTENT_TYPE, MIME_APPLICATION_JSON)).thenReturn(httpServerResponse);
         when(httpServerResponse.end(anyString())).thenReturn(voidFuture);
-        exceptionHandler.handle(routingContext);
+        failureHandler.handle(routingContext);
         vertxTestContext.completeNow();
     }
 }
