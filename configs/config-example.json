@@ -94,21 +94,6 @@
       "minReadNumber": 100
     },
     {
-      "id": "iudx.catalogue.server.databroker.DataBrokerVerticle",
-      "verticleInstances": 1,
-      "dataBrokerIP": "",
-      "dataBrokerPort": 1234,
-      "dataBrokerVhost": "",
-      "dataBrokerUserName": "",
-      "dataBrokerPassword": "",
-      "connectionTimeout": 6000,
-      "requestedHeartbeat": 60,
-      "handshakeTimeout": 6000,
-      "requestedChannelMax": 5,
-      "networkRecoveryInterval": 500,
-      "automaticRecoveryEnabled": ""
-    },
-    {
       "id": "iudx.catalogue.server.databroker.rabbitmq.RabbitMQVerticle",
       "verticleInstances": 1,
       "dataBrokerIP": "",
