@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -102,16 +103,8 @@ public class AuditingServiceTest {
         AuditingServiceImpl.rmqService = mock(RabbitMQService.class);
 
         when(asyncResult.succeeded()).thenReturn(true);
-        doAnswer(
-                new Answer<AsyncResult<JsonObject>>() {
-                    @Override
-                    public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
-                        ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(3)).handle(asyncResult);
-                        return null;
-                    }
-                })
-                .when(auditingService.rmqService)
-                .publishMessage(any(), anyString(), anyString());
+        when(auditingService.rmqService.publishMessage(any(), anyString(), anyString()))
+            .thenReturn(Future.succeededFuture());
 
         auditingService.insertAuditingValuesInRmq(request)
             .onComplete(handler -> {

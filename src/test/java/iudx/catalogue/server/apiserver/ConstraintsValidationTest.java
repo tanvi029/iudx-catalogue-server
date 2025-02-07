@@ -436,10 +436,14 @@ public class ConstraintsValidationTest {
         .toJsonArray().getJsonObject(0);
     resource.put(NAME, id);
 
-    validator.validateSchema(resource);
-    testContext.failing(response -> testContext.verify(() -> {
-      testContext.completeNow();
-    }));
+    validator.validateSchema(resource)
+        .onComplete(handler -> {
+          if(handler.succeeded()){
+            testContext.failNow("Fail;");
+          } else {
+            testContext.completeNow();
+          }
+        });
   }
 
  /* @Test
