@@ -241,7 +241,6 @@ public class ElasticsearchServiceImpl implements ElasticsearchService {
 
     // Parse aggregations if present
     if (response.aggregations() != null && !response.aggregations().isEmpty()) {
-      JsonArray buckets;
       JsonpMapper mapper =
           asyncClient._jsonpMapper().withAttribute(JsonpMapperFeatures.SERIALIZE_TYPED_KEYS, false);
       StringWriter writer = new StringWriter();

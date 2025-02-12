@@ -86,7 +86,7 @@ public class ItemSchemaHandler implements Handler<RoutingContext> {
     LOGGER.debug("Info: itemType: " + itemType);
     RoutingContextHelper.setItemType(routingContext, itemType);
     Item item = createItemFromType(itemType, requestBody);
-    LOGGER.debug("Success: Schema validation");
+    LOGGER.debug("Success: Schema validation for item: " + item.toJson());
 
     // populating jwt authentication info ->
     JwtAuthenticationInfo.Builder jwtAuthenticationInfo =

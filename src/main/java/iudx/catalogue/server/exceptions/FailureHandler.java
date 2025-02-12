@@ -47,17 +47,15 @@ public class FailureHandler implements Handler<RoutingContext> {
 
     if (failure instanceof DecodeException) {
       handleDecodeException(routingContext);
-      return;
     } else if (failure instanceof IllegalArgumentException
         || failure instanceof NullPointerException) {
       handleIllegalArgumentException(routingContext);
     } else if (failure instanceof ClassCastException) {
       handleClassCastException(routingContext);
-      return;
     } else if (failure instanceof DxRuntimeException) {
       DxRuntimeException exception = (DxRuntimeException) failure;
       LOGGER.error(exception.getUrn().getUrn() + " : " + exception.getMessage());
-      HttpStatusCode code = HttpStatusCode.getByValue(exception.getStatusCode());
+      //HttpStatusCode code = HttpStatusCode.getByValue(exception.getStatusCode());
 
       JsonObject response =
           new RespBuilder()

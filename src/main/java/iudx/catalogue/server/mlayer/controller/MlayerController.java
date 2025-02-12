@@ -597,7 +597,6 @@ public class MlayerController {
           } else {
             if (handler.cause().getMessage().equals("No Content Available")) {
               response.setStatusCode(204).end();
-              return;
             } else if (handler.cause().getMessage().contains(VALIDATION_FAILURE_MSG)) {
               response
                   .setStatusCode(400)
@@ -607,7 +606,6 @@ public class MlayerController {
                           .withTitle(TITLE_INVALID_SCHEMA)
                           .withDetail("The Schema of dataset is invalid")
                           .getResponse());
-              return;
             } else {
               response.setStatusCode(400).end(handler.cause().getMessage());
             }

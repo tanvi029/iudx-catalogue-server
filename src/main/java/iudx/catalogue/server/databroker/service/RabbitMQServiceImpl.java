@@ -48,7 +48,7 @@ public class RabbitMQServiceImpl implements RabbitMQService {
 
     client.basicPublish(toExchange, routingKey, buffer, publishHandler -> {
       if (publishHandler.succeeded()) {
-        JsonObject result = new JsonObject().put("type", "success");
+        //JsonObject result = new JsonObject().put("type", "success");
         promise.complete();
       } else {
         RespBuilder respBuilder =

@@ -262,7 +262,6 @@ public class RelationshipServiceImpl implements RelationshipService {
   public Future<JsonObject> relSearch(JsonObject request) {
     Promise<JsonObject> promise = Promise.promise();
 
-    String subQuery = "";
     QueryModel queryModel = new QueryModel();
     QueryModel subQueryModel = new QueryModel(QueryType.BOOL);
 
