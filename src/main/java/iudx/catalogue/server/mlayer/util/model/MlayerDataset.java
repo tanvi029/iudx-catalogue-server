@@ -49,17 +49,16 @@ public class MlayerDataset {
   }
 
   public Future<JsonObject> getMlayerDataset(JsonObject requestData) {
-    Promise<JsonObject> promise = Promise.promise();
-
     QueryModel queryModel = new QueryModel();
     QueryModel query = new QueryModel(QueryType.BOOL);
     query.addMustQuery(new QueryModel(QueryType.MATCH,
         Map.of(FIELD, "type.keyword", VALUE, "iudx:ResourceGroup")));
     query.addMustQuery(new QueryModel(QueryType.MATCH,
         Map.of(FIELD, ID_KEYWORD, VALUE, requestData.getString(ID))));
-
     queryModel.setQueries(query);
     queryModel.setIncludeFields(List.of("provider", "cos"));
+
+    Promise<JsonObject> promise = Promise.promise();
     esService.search(docIndex, queryModel)
         .onComplete(handlerRes -> {
           if (handlerRes.succeeded()) {
@@ -263,10 +262,7 @@ public class MlayerDataset {
   }
 
   private QueryModel getMlayerDatasetQueryModel(String id, String cosId, String providerId) {
-    QueryModel getMlayerDatasetQueryModel = new QueryModel();
-    QueryModel getMlayerDatasetQuery = new QueryModel(QueryType.BOOL);
-
-    // First subquery
+    // SubQueries
     QueryModel subQuery1 = new QueryModel(QueryType.BOOL);
     subQuery1.addMustQuery(
         new QueryModel(QueryType.MATCH, Map.of(FIELD, ID_KEYWORD, VALUE, id)));
@@ -274,7 +270,6 @@ public class MlayerDataset {
         new QueryModel(QueryType.MATCH, Map.of(FIELD, "type.keyword", VALUE,
             ITEM_TYPE_RESOURCE_GROUP)));
 
-    // Second subquery
     QueryModel subQuery2 = new QueryModel(QueryType.BOOL);
     subQuery2.addMustQuery(new QueryModel(QueryType.MATCH, Map.of(FIELD, ID_KEYWORD, VALUE,
         providerId)));
@@ -282,7 +277,6 @@ public class MlayerDataset {
         new QueryModel(QueryType.MATCH, Map.of(FIELD, "type.keyword",
             VALUE, ITEM_TYPE_PROVIDER)));
 
-    // Third subquery
     QueryModel subQuery3 = new QueryModel(QueryType.BOOL);
     subQuery3.addMustQuery(
         new QueryModel(QueryType.MATCH,
@@ -291,7 +285,6 @@ public class MlayerDataset {
         new QueryModel(QueryType.MATCH, Map.of(FIELD, "type.keyword",
             VALUE, ITEM_TYPE_RESOURCE)));
 
-    // Fourth subquery
     QueryModel subQuery4 = new QueryModel(QueryType.BOOL);
     subQuery4.addMustQuery(new QueryModel(QueryType.MATCH, Map.of(FIELD, ID_KEYWORD, VALUE,
         cosId)));
@@ -299,9 +292,10 @@ public class MlayerDataset {
         new QueryModel(QueryType.MATCH, Map.of(FIELD, "type.keyword", VALUE,
             ITEM_TYPE_COS)));
 
+    QueryModel getMlayerDatasetQuery = new QueryModel(QueryType.BOOL);
     getMlayerDatasetQuery.setShouldQueries(
         List.of(subQuery1, subQuery2, subQuery3, subQuery4));
-
+    QueryModel getMlayerDatasetQueryModel = new QueryModel();
     getMlayerDatasetQueryModel.setQueries(getMlayerDatasetQuery);
     getMlayerDatasetQueryModel.setIncludeFields(List.of(
         "resourceServer", "id", "type", "apdURL", "label", "description", "instance",
@@ -431,25 +425,25 @@ public class MlayerDataset {
         AggregationType.TERMS,
         Map.of(FIELD, "resourceGroup.keyword", SIZE_KEY, 10000)
     );
-    QueryModel access_policies = new QueryModel(
+    QueryModel accessPolicies = new QueryModel(
         AggregationType.TERMS,
         Map.of(FIELD, "accessPolicy.keyword", SIZE_KEY, 10000)
     );
 
-    QueryModel accessPolicy_count = new QueryModel(
+    QueryModel accessPolicyCount = new QueryModel(
         AggregationType.VALUE_COUNT,
         Map.of(FIELD, "accessPolicy.keyword")
     );
 
-    QueryModel resource_count = new QueryModel(
+    QueryModel resourceCount = new QueryModel(
         AggregationType.VALUE_COUNT,
         Map.of(FIELD, ID_KEYWORD)
     );
 
     // Creating the query part for search
     aggs.setAggregationName(RESULTS);
-    aggs.setAggregationsMap(Map.of("access_policies", access_policies,
-        "accessPolicy_count", accessPolicy_count, "resource_count", resource_count));
+    aggs.setAggregationsMap(Map.of("access_policies", accessPolicies,
+        "accessPolicy_count", accessPolicyCount, "resource_count", resourceCount));
     QueryModel queryModel = new QueryModel();
     queryModel.setAggregations(List.of(aggs));
     queryModel.setLimit("0");

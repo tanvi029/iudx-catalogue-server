@@ -8,13 +8,12 @@ import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
+import iudx.catalogue.server.authenticator.model.JwtAuthenticationInfo;
 import iudx.catalogue.server.authenticator.model.JwtData;
 import iudx.catalogue.server.authenticator.service.AuthenticationService;
-import iudx.catalogue.server.authenticator.model.JwtAuthenticationInfo;
 import java.util.Arrays;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 
 /**
  * Mock Auth Service. Bypass main auth service.
@@ -23,7 +22,7 @@ import org.apache.logging.log4j.Logger;
 public class MockAuthenticationServiceImpl implements AuthenticationService {
 
   private static final Logger LOGGER = LogManager.getLogger(MockAuthenticationServiceImpl.class);
-  private String authHost;
+  private final String authHost;
 
   public MockAuthenticationServiceImpl(WebClient client, String authHost) {
     this.authHost = authHost;

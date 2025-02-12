@@ -83,21 +83,18 @@ public class DataModel {
    * @return Future containing JsonArray of search results.
    */
   private Future<JsonArray> getAllDatasetsByRsGrp() {
-    Promise<JsonArray> promise = Promise.promise();
-
     QueryModel shouldQuery = new QueryModel(QueryType.MATCH, Map.of(
         FIELD, "type.keyword", VALUE, ITEM_TYPE_RESOURCE_GROUP
     ));
-
     QueryModel innerBoolQuery = new QueryModel(QueryType.BOOL);
     innerBoolQuery.addShouldQuery(shouldQuery);
-
     QueryModel outerBoolQuery = new QueryModel(QueryType.BOOL);
     outerBoolQuery.addMustQuery(innerBoolQuery);
-
     QueryModel finalQueryModel = new QueryModel();
     finalQueryModel.setQueries(outerBoolQuery);
     finalQueryModel.setLimit(MAX_LIMIT);
+
+    Promise<JsonArray> promise = Promise.promise();
     esService.search(docIndex, finalQueryModel)
         .onComplete(searchHandler -> {
           if (searchHandler.succeeded()) {

@@ -219,13 +219,13 @@ public class MlayerServiceImpl implements MlayerService {
 
   @Override
   public Future<JsonObject> updateMlayerDomain(JsonObject request) {
-    Promise<JsonObject> promise = Promise.promise();
     String name = request.getString(NAME).toLowerCase();
     LOGGER.debug(name);
     String id = Hashing.sha256().hashString(name, StandardCharsets.UTF_8).toString();
     LOGGER.debug(id);
     request.put(MLAYER_ID, id);
     MlayerDomain mlayerDomain = new MlayerDomain(esService, mlayerDomainIndex);
+    Promise<JsonObject> promise = Promise.promise();
     mlayerDomain.updateMlayerDomain(request)
         .onComplete(updateMlayerHandler -> {
           if (updateMlayerHandler.succeeded()) {
@@ -278,7 +278,6 @@ public class MlayerServiceImpl implements MlayerService {
 
   @Override
   public Future<JsonObject> getMlayerAllDatasets(JsonObject requestParam) {
-    Promise<JsonObject> promise = Promise.promise();
     QueryModel query = new QueryModel(QueryType.BOOL);
     query.addMustQuery(new QueryModel(QueryType.TERMS,
         Map.of(FIELD, "type.keyword", VALUE,
@@ -296,6 +295,7 @@ public class MlayerServiceImpl implements MlayerService {
     LOGGER.debug("database get mlayer all datasets called");
     MlayerDataset mlayerDataset = new MlayerDataset(webClient, esService, docIndex,
         mlayerInstanceIndex);
+    Promise<JsonObject> promise = Promise.promise();
     mlayerDataset.getMlayerAllDatasets(requestParam, queryModel)
         .onComplete(getMlayerAllDatasets -> {
           if (getMlayerAllDatasets.succeeded()) {
@@ -340,8 +340,8 @@ public class MlayerServiceImpl implements MlayerService {
       }
 
       QueryModel baseResourceGroupQuery = new QueryModel(QueryType.BOOL);
-      baseResourceGroupQuery.addMustQuery(new QueryModel(QueryType.MATCH, Map.of(FIELD, "type" +
-              ".keyword", VALUE, ITEM_TYPE_RESOURCE_GROUP)));
+      baseResourceGroupQuery.addMustQuery(new QueryModel(QueryType.MATCH, Map.of(FIELD,
+          "type.keyword", VALUE, ITEM_TYPE_RESOURCE_GROUP)));
 
       if (requestData.containsKey(TAGS) && !requestData.getJsonArray(TAGS).isEmpty()) {
         JsonArray tagsArray = requestData.getJsonArray(TAGS);
@@ -371,13 +371,13 @@ public class MlayerServiceImpl implements MlayerService {
         )));
       }
 
-      QueryModel baseProviderCOSQuery = new QueryModel(QueryType.BOOL);
-      baseProviderCOSQuery.addMustQuery(new QueryModel(QueryType.TERMS, Map.of(FIELD, "type" +
-              ".keyword", VALUE, List.of(ITEM_TYPE_PROVIDER, ITEM_TYPE_COS))));
+      QueryModel baseProviderCosQuery = new QueryModel(QueryType.BOOL);
+      baseProviderCosQuery.addMustQuery(new QueryModel(QueryType.TERMS, Map.of(FIELD,
+          "type.keyword", VALUE, List.of(ITEM_TYPE_PROVIDER, ITEM_TYPE_COS))));
 
       QueryModel mainQueryModel = new QueryModel();
       QueryModel queryModel = new QueryModel(QueryType.BOOL);
-      queryModel.setShouldQueries(List.of(baseResourceGroupQuery, baseProviderCOSQuery));
+      queryModel.setShouldQueries(List.of(baseResourceGroupQuery, baseProviderCosQuery));
       mainQueryModel.setQueries(queryModel);
       mainQueryModel.setIncludeFields(List.of(
           "type", "id", "label", "accessPolicy", "tags", "instance",

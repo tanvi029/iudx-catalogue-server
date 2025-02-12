@@ -22,22 +22,23 @@ public class AggregationFactory {
     Map<String, Object> aggregationParameters = queryModel.getAggregationParameters();
     switch (aggregationType) {
       case TERMS:
-        builder.terms(t -> {
-          t.field((String) aggregationParameters.get(FIELD));  // Set the field
+        builder.terms(
+            t -> {
+              t.field((String) aggregationParameters.get(FIELD)); // Set the field
 
-          // Check if SIZE_KEY is present and not null, then set the size
-          if (aggregationParameters.containsKey(SIZE_KEY) &&
-              aggregationParameters.get(SIZE_KEY) != null) {
-            t.size((Integer) aggregationParameters.get(SIZE_KEY));  // Set the size
-          }
-          return t;
-        });
+              // Check if SIZE_KEY is present and not null, then set the size
+              if (aggregationParameters.containsKey(SIZE_KEY)
+                  && aggregationParameters.get(SIZE_KEY) != null) {
+                t.size((Integer) aggregationParameters.get(SIZE_KEY)); // Set the size
+              }
+              return t;
+            });
         break;
       case HISTOGRAM:
-        builder.histogram(h ->
-            h.field((String) aggregationParameters.get(FIELD))
-                .interval((Double) aggregationParameters.get("interval"))
-        );
+        builder.histogram(
+            h ->
+                h.field((String) aggregationParameters.get(FIELD))
+                    .interval((Double) aggregationParameters.get("interval")));
         break;
       case AVG:
         builder.avg(a -> a.field((String) aggregationParameters.get(FIELD)));
@@ -58,8 +59,12 @@ public class AggregationFactory {
         builder.valueCount(vc -> vc.field((String) aggregationParameters.get(FIELD)));
         break;
       case FILTER:
-        builder.filter(f -> f.term(t -> t.field((String) aggregationParameters.get(FIELD))
-            .value(FieldValue.of(aggregationParameters.get("value")))));
+        builder.filter(
+            f ->
+                f.term(
+                    t ->
+                        t.field((String) aggregationParameters.get(FIELD))
+                            .value(FieldValue.of(aggregationParameters.get("value")))));
         break;
       case GLOBAL:
         builder.global(g -> g);
@@ -72,8 +77,11 @@ public class AggregationFactory {
 
     // Add sub-aggregations
     if (queryModel.getAggregationsMap() != null) {
-      queryModel.getAggregationsMap().forEach((name, subQueryModel) -> builder.aggregations(name,
-          buildAggregation(subQueryModel).build()));
+      queryModel
+          .getAggregationsMap()
+          .forEach(
+              (name, subQueryModel) ->
+                  builder.aggregations(name, buildAggregation(subQueryModel).build()));
     }
 
     return builder;

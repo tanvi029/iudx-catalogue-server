@@ -107,15 +107,13 @@ public class MlayerProvider {
                 promise.fail(NO_CONTENT_AVAILABLE);
               }
               JsonObject result = new JsonObject();
-              JsonArray resourceGroupAndProvider = new JsonArray();
-
               if (getAggregations() != null) {
                 int providerCount =
                     getAggregations().getJsonObject("provider_count")
                         .getInteger(VALUE);
                 result.put("providerCount", providerCount);
               }
-
+              JsonArray resourceGroupAndProvider = new JsonArray();
               List<ElasticsearchResponse> responseList = resultHandler.result();
               DbResponseMessageBuilder responseMsg = new DbResponseMessageBuilder();
               responseMsg.statusSuccess();

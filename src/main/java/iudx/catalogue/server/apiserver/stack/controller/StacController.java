@@ -150,6 +150,8 @@ public class StacController {
       case REQUEST_PATCH:
         validationJson.put("stack_type", "patch:Stack");
         break;
+      default:
+        break;
     }
 
     if (!method.equals(REQUEST_DELETE)) {

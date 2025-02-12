@@ -62,7 +62,6 @@ public final class QueryDecoder {
     String searchType = request.getString(SEARCH_TYPE);
     JsonObject elasticQuery = new JsonObject();
     QueryModel geoShapeQueryModel = null;
-    QueryModel queryModel = new QueryModel();
     QueryModel tempQueryModel = new QueryModel(BOOL);
     boolean match = false;
 
@@ -241,6 +240,8 @@ public final class QueryDecoder {
       LOGGER.debug("Info: Instance found in query;" + matchQueryModel.toJson());
       tempQueryModel.addMustQuery(matchQueryModel);
     }
+
+    QueryModel queryModel = new QueryModel();
 
     /* checking the requests for limit attribute */
     if (request.containsKey(LIMIT)) {
@@ -523,48 +524,42 @@ public final class QueryDecoder {
         tempQueryModel = new QueryModel();
         tempQueryModel.setAggregations(List.of(aggs));
       } else {
-        QueryModel instanceIdTermQuery = new QueryModel(QueryType.TERM,
-            Map.of(FIELD, INSTANCE + KEYWORD_KEY, VALUE, instanceId));
-
-        QueryModel queryModel = new QueryModel(BoolOperator.FILTER, List.of(instanceIdTermQuery));
-
         Map<String, Object> termsAggParams = new HashMap<>();
         termsAggParams.put(FIELD, TAGS + KEYWORD_KEY);
         termsAggParams.put(SIZE_KEY, limit);
         QueryModel aggs = new QueryModel(AggregationType.TERMS, termsAggParams);
         aggs.setAggregationName(RESULTS);
 
+        QueryModel instanceIdTermQuery = new QueryModel(QueryType.TERM,
+            Map.of(FIELD, INSTANCE + KEYWORD_KEY, VALUE, instanceId));
+        QueryModel queryModel = new QueryModel(BoolOperator.FILTER, List.of(instanceIdTermQuery));
         tempQueryModel = new QueryModel(queryModel, List.of(aggs));
       }
     } else {
       if (instanceId == null || instanceId == "") {
-        QueryModel typeMatchQuery = new QueryModel(QueryType.MATCH,
-            Map.of(FIELD, TYPE, VALUE, type));
-
-        QueryModel queryModel = new QueryModel(BoolOperator.FILTER, List.of(typeMatchQuery));
-
         Map<String, Object> termsAggParams = new HashMap<>();
         termsAggParams.put(FIELD, ID_KEYWORD);
         termsAggParams.put(SIZE_KEY, limit);
         QueryModel aggs = new QueryModel(AggregationType.TERMS, termsAggParams);
         aggs.setAggregationName(RESULTS);
 
+        QueryModel typeMatchQuery = new QueryModel(QueryType.MATCH,
+            Map.of(FIELD, TYPE, VALUE, type));
+        QueryModel queryModel = new QueryModel(BoolOperator.FILTER, List.of(typeMatchQuery));
         tempQueryModel = new QueryModel(queryModel, List.of(aggs));
       } else {
-        QueryModel typeMatchQuery = new QueryModel(QueryType.MATCH,
-            Map.of(FIELD, TYPE, VALUE, type));
-        QueryModel instanceIdTermQuery = new QueryModel(QueryType.TERM,
-            Map.of(FIELD, INSTANCE + KEYWORD_KEY, VALUE, instanceId));
-
-        QueryModel queryModel =
-            new QueryModel(BoolOperator.FILTER, List.of(typeMatchQuery, instanceIdTermQuery));
-
         Map<String, Object> termsAggParams = new HashMap<>();
         termsAggParams.put(FIELD, ID_KEYWORD);
         termsAggParams.put(SIZE_KEY, limit);
         QueryModel aggs = new QueryModel(AggregationType.TERMS, termsAggParams);
         aggs.setAggregationName(RESULTS);
 
+        QueryModel instanceIdTermQuery = new QueryModel(QueryType.TERM,
+            Map.of(FIELD, INSTANCE + KEYWORD_KEY, VALUE, instanceId));
+        QueryModel typeMatchQuery = new QueryModel(QueryType.MATCH,
+            Map.of(FIELD, TYPE, VALUE, type));
+        QueryModel queryModel =
+            new QueryModel(BoolOperator.FILTER, List.of(typeMatchQuery, instanceIdTermQuery));
         tempQueryModel = new QueryModel(queryModel, List.of(aggs));
       }
     }

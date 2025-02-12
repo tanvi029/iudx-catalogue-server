@@ -12,9 +12,7 @@ import static iudx.catalogue.server.util.Constants.RESOURCE_SERVER_URL;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
 
-/**
- * Represents JWT authentication information.
- */
+/** Represents JWT authentication information. */
 @DataObject
 public class JwtAuthenticationInfo {
   private final String token;
@@ -54,14 +52,37 @@ public class JwtAuthenticationInfo {
   }
 
   // Getters
-  public String getToken() { return token; }
-  public String getMethod() { return method; }
-  public String getApiEndpoint() { return apiEndpoint; }
-  public String getItemType() { return itemType; }
-  public String getResourceServerUrl() { return resourceServerUrl; }
-  public String getProviderUserId() { return providerUserId; }
-  public String getCosAdmin() { return cosAdmin; }
-  public String getId() { return id; }
+  public String getToken() {
+    return token;
+  }
+
+  public String getMethod() {
+    return method;
+  }
+
+  public String getApiEndpoint() {
+    return apiEndpoint;
+  }
+
+  public String getItemType() {
+    return itemType;
+  }
+
+  public String getResourceServerUrl() {
+    return resourceServerUrl;
+  }
+
+  public String getProviderUserId() {
+    return providerUserId;
+  }
+
+  public String getCosAdmin() {
+    return cosAdmin;
+  }
+
+  public String getId() {
+    return id;
+  }
 
   /**
    * Converts this instance to a JsonObject.
@@ -89,9 +110,7 @@ public class JwtAuthenticationInfo {
     return jsonObject;
   }
 
-  /**
-   * Builder class for JwtAuthenticationInfo.
-   */
+  /** Builder class for JwtAuthenticationInfo. */
   public static class Builder {
     private String token;
     private String method;
@@ -160,9 +179,7 @@ public class JwtAuthenticationInfo {
     }
   }
 
-  /**
-   * Helper class for mutable JwtAuthenticationInfo.
-   */
+  /** Helper class for mutable JwtAuthenticationInfo. */
   public static class MutableJwtInfo {
     private JwtAuthenticationInfo jwtAuthenticationInfo;
 

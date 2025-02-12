@@ -60,9 +60,6 @@ public class ElasticsearchServiceImpl implements ElasticsearchService {
     }
     QueryModel queries = queryModel.getQueries();
     Query query = queries == null ? null : queries.toElasticsearchQuery();
-
-    SourceConfig sourceConfig = queryModel.toSourceConfig();
-    List<SortOptions> sortOptions = queryModel.toSortOptions();
     String size = queryModel.getLimit();
     String from = queryModel.getOffset();
     SearchRequest.Builder requestBuilder = new SearchRequest.Builder()
@@ -81,9 +78,11 @@ public class ElasticsearchServiceImpl implements ElasticsearchService {
     if (!elasticsearchAggregations.isEmpty()) {
       requestBuilder.aggregations(elasticsearchAggregations);
     }
+    SourceConfig sourceConfig = queryModel.toSourceConfig();
     if (sourceConfig != null) {
       requestBuilder.source(sourceConfig);
     }
+    List<SortOptions> sortOptions = queryModel.toSortOptions();
     if (sortOptions != null) {
       requestBuilder.sort(sortOptions);
     }
@@ -171,8 +170,8 @@ public class ElasticsearchServiceImpl implements ElasticsearchService {
         LOGGER.error("Update operation failed: {}", error.getMessage());
         promise.fail(error);
       } else {
-        promise.complete(successfulItemOperationResp(document, "Success: Item " +
-            "updated successfully"));
+        promise.complete(successfulItemOperationResp(document,
+            "Success: Item updated successfully"));
       }
     });
 
@@ -195,8 +194,8 @@ public class ElasticsearchServiceImpl implements ElasticsearchService {
         LOGGER.error("Patch operation failed: {}", error.getMessage());
         promise.fail(error);
       } else {
-        promise.complete(successfulItemOperationResp(document, "Success: Item " +
-            "updated successfully"));
+        promise.complete(successfulItemOperationResp(document,
+            "Success: Item updated successfully"));
       }
     });
 
@@ -217,8 +216,7 @@ public class ElasticsearchServiceImpl implements ElasticsearchService {
         LOGGER.error("Delete operation failed: {}", error.getMessage());
         promise.fail(error);
       } else {
-        promise.complete(successResp(id, "Success: Item deleted " +
-            "successfully"));
+        promise.complete(successResp(id, "Success: Item deleted successfully"));
       }
     });
 

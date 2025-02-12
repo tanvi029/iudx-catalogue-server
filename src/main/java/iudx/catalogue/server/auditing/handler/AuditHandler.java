@@ -29,6 +29,14 @@ public class AuditHandler implements Handler<RoutingContext> {
     this.auditingService = auditingService;
   }
 
+  /**
+   * @param event the event to handle
+   */
+  @Override
+  public void handle(RoutingContext event) {
+    event.next();
+  }
+
   public void handle(RoutingContext routingContext, String api) {
     JwtData jwtDecodedInfo = RoutingContextHelper.getJwtDecodedInfo(routingContext);
     String id;
@@ -54,8 +62,8 @@ public class AuditHandler implements Handler<RoutingContext> {
   /**
    * function to handle call to audit service.
    *
-   * @param auditInfo(jwtDecodedInfo) contains the user-role, user-id, iid
-   * item-id, api-endpoint and the HTTP method.
+   * @param auditInfo contains the user-role, user-id, iid item-id, api-endpoint and the HTTP
+   *     method.
    */
   public void updateAuditTable(JsonObject auditInfo) {
     LOGGER.info("Updating audit table on successful transaction");
@@ -63,9 +71,7 @@ public class AuditHandler implements Handler<RoutingContext> {
     ZonedDateTime zst = ZonedDateTime.now();
     LOGGER.debug("TIME ZST: " + zst);
     long epochTime = getEpochTime(zst);
-    auditInfo
-        .put(EPOCH_TIME, epochTime)
-        .put(USERID, auditInfo.getString(USER_ID));
+    auditInfo.put(EPOCH_TIME, epochTime).put(USERID, auditInfo.getString(USER_ID));
 
     LOGGER.debug("audit data: " + auditInfo.encodePrettily());
     auditingService
@@ -76,14 +82,5 @@ public class AuditHandler implements Handler<RoutingContext> {
 
   private long getEpochTime(ZonedDateTime zst) {
     return zst.toInstant().toEpochMilli();
-  }
-
-/**
-*
- * @param event  the event to handle
-*/
-  @Override
-  public void handle(RoutingContext event) {
-    event.next();
   }
 }

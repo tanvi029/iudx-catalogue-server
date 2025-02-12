@@ -10,8 +10,8 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
-import iudx.catalogue.server.apiserver.Item.handler.ItemLinkValidationHandler;
-import iudx.catalogue.server.apiserver.Item.handler.ItemSchemaHandler;
+import iudx.catalogue.server.apiserver.item.handler.ItemLinkValidationHandler;
+import iudx.catalogue.server.apiserver.item.handler.ItemSchemaHandler;
 import iudx.catalogue.server.auditing.handler.AuditHandler;
 import iudx.catalogue.server.authenticator.handler.AuthenticationHandler;
 import iudx.catalogue.server.authenticator.handler.AuthorizationHandler;
@@ -157,7 +157,9 @@ public class CrudController {
         .produces(MIME_APPLICATION_JSON)
         .handler(itemSchemaHandler::verifyAuthHeader)
         .handler(itemSchemaHandler::validateIdHandler)
-        .handler(routingContext -> itemLinkValidationHandler.validateDeleteItemHandler(routingContext, isUac))
+        .handler(
+            routingContext ->
+                itemLinkValidationHandler.validateDeleteItemHandler(routingContext, isUac))
         .handler(authenticationHandler)
         .handler(
             authorizationHandler.forRoleAndEntityAccess(
@@ -224,7 +226,8 @@ public class CrudController {
 
     // If post then create. Else, update
     if (routingContext.request().method().toString().equals(REQUEST_POST)) {
-      crudService.createItem(validatedRequest)
+      crudService
+          .createItem(validatedRequest)
           .onComplete(
               itemHandler -> {
                 if (itemHandler.failed()) {
@@ -237,21 +240,29 @@ public class CrudController {
                 }
               });
     } else {
-      crudService.updateItem(validatedRequest)
-          .onComplete(itemHandler -> {
-            if (itemHandler.failed()) {
-              LOGGER.error("Failed to update item: " + itemHandler.cause().getMessage());
-              if (itemHandler.cause().getMessage().contains("Doc doesn't exist")) {
-                routingContext.response().setStatusCode(404).end(itemHandler.cause().getMessage());
-              } else {
-                routingContext.response().setStatusCode(400).end(itemHandler.cause().getMessage());
-              }
-            } else {
-              JsonObject updatedItem = itemHandler.result();
-              routingContext.response().setStatusCode(200).end(updatedItem.encodePrettily());
-              routingContext.next();
-            }
-          });
+      crudService
+          .updateItem(validatedRequest)
+          .onComplete(
+              itemHandler -> {
+                if (itemHandler.failed()) {
+                  LOGGER.error("Failed to update item: " + itemHandler.cause().getMessage());
+                  if (itemHandler.cause().getMessage().contains("Doc doesn't exist")) {
+                    routingContext
+                        .response()
+                        .setStatusCode(404)
+                        .end(itemHandler.cause().getMessage());
+                  } else {
+                    routingContext
+                        .response()
+                        .setStatusCode(400)
+                        .end(itemHandler.cause().getMessage());
+                  }
+                } else {
+                  JsonObject updatedItem = itemHandler.result();
+                  routingContext.response().setStatusCode(200).end(updatedItem.encodePrettily());
+                  routingContext.next();
+                }
+              });
     }
   }
 
@@ -268,27 +279,30 @@ public class CrudController {
     LOGGER.debug("Info: Getting item; id=" + itemId);
     JsonObject requestBody = new JsonObject().put(ID, itemId);
 
-    crudService.getItem(requestBody)
-        .onComplete(getHandler -> {
-          if (getHandler.succeeded()) {
-            JsonObject retrievedItem = getHandler.result();
-            response.setStatusCode(200).end(retrievedItem.toString());
-          } else {
-            if (getHandler.cause().getLocalizedMessage().contains("urn:dx:cat:ItemNotFound")) {
-              LOGGER.error("Fail: Item not found");
-              JsonObject errorResponse = new JsonObject()
-                  .put(TYPE, TYPE_ITEM_NOT_FOUND)
-                  .put(STATUS, ERROR)
-                  .put(TOTAL_HITS, 0)
-                  .put(RESULTS, new JsonArray())
-                  .put(DETAIL, "doc doesn't exist");
-              response.setStatusCode(404).end(errorResponse.toString());
-            } else {
-              LOGGER.error("Fail: Item retrieval failed; " + getHandler.cause().getMessage());
-              response.setStatusCode(400).end(getHandler.cause().getMessage());
-            }
-          }
-        });
+    crudService
+        .getItem(requestBody)
+        .onComplete(
+            getHandler -> {
+              if (getHandler.succeeded()) {
+                JsonObject retrievedItem = getHandler.result();
+                response.setStatusCode(200).end(retrievedItem.toString());
+              } else {
+                if (getHandler.cause().getLocalizedMessage().contains("urn:dx:cat:ItemNotFound")) {
+                  LOGGER.error("Fail: Item not found");
+                  JsonObject errorResponse =
+                      new JsonObject()
+                          .put(TYPE, TYPE_ITEM_NOT_FOUND)
+                          .put(STATUS, ERROR)
+                          .put(TOTAL_HITS, 0)
+                          .put(RESULTS, new JsonArray())
+                          .put(DETAIL, "doc doesn't exist");
+                  response.setStatusCode(404).end(errorResponse.toString());
+                } else {
+                  LOGGER.error("Fail: Item retrieval failed; " + getHandler.cause().getMessage());
+                  response.setStatusCode(400).end(getHandler.cause().getMessage());
+                }
+              }
+            });
   }
 
   /**
@@ -301,20 +315,26 @@ public class CrudController {
     String itemId = routingContext.queryParams().get(ID);
     requestBody.put(ID, itemId);
 
-    crudService.deleteItem(requestBody)
-        .onSuccess(result -> {
-          LOGGER.info("Item deleted successfully");
-          routingContext.response().setStatusCode(200).end(result.toString());
-          routingContext.next();
-        })
-        .onFailure(throwable -> {
-          LOGGER.error("Failed to delete item", throwable);
-          if (throwable instanceof NoSuchElementException) {
-            routingContext.response().setStatusCode(404).end(itemNotFoundResponse("Item not found"));
-          } else {
-            routingContext.response().setStatusCode(400).end(throwable.getMessage());
-          }
-        });
+    crudService
+        .deleteItem(requestBody)
+        .onSuccess(
+            result -> {
+              LOGGER.info("Item deleted successfully");
+              routingContext.response().setStatusCode(200).end(result.toString());
+              routingContext.next();
+            })
+        .onFailure(
+            throwable -> {
+              LOGGER.error("Failed to delete item", throwable);
+              if (throwable instanceof NoSuchElementException) {
+                routingContext
+                    .response()
+                    .setStatusCode(404)
+                    .end(itemNotFoundResponse("Item not found"));
+              } else {
+                routingContext.response().setStatusCode(400).end(throwable.getMessage());
+              }
+            });
   }
 
   /**
@@ -333,21 +353,24 @@ public class CrudController {
     String instance = routingContext.queryParams().get(ID);
 
     /* INSTANCE = "" to make sure createItem can be used for onboarding instance and items */
-    JsonObject body = new JsonObject()
-        .put(ID, instance)
-        .put(TYPE, new JsonArray().add(ITEM_TYPE_INSTANCE))
-        .put(INSTANCE, "");
-    crudService.createItem(body)
-        .onComplete(res -> {
-          if (res.succeeded()) {
-            LOGGER.info("Success: Instance created;");
-            response.setStatusCode(201).end(res.result().toString());
-            // TODO: call auditing service here
-          } else {
-            LOGGER.error("Fail: Creating instance");
-            response.setStatusCode(400).end(res.cause().getMessage());
-          }
-        });
+    JsonObject body =
+        new JsonObject()
+            .put(ID, instance)
+            .put(TYPE, new JsonArray().add(ITEM_TYPE_INSTANCE))
+            .put(INSTANCE, "");
+    crudService
+        .createItem(body)
+        .onComplete(
+            res -> {
+              if (res.succeeded()) {
+                LOGGER.info("Success: Instance created;");
+                response.setStatusCode(201).end(res.result().toString());
+                // TODO: call auditing service here
+              } else {
+                LOGGER.error("Fail: Creating instance");
+                response.setStatusCode(400).end(res.cause().getMessage());
+              }
+            });
     LOGGER.debug("Success: Authenticated instance creation request");
   }
 
@@ -369,17 +392,19 @@ public class CrudController {
 
     /* INSTANCE = "" to make sure createItem can be used for onboarding instance and items */
     JsonObject body = new JsonObject().put(ID, instance).put(INSTANCE, "");
-    crudService.deleteItem(body)
-        .onComplete(res -> {
-          if (res.succeeded()) {
-            LOGGER.info("Success: Instance deleted;");
-            response.setStatusCode(200).end(res.result().toString());
-            // TODO: call auditing service here
-          } else {
-            LOGGER.error("Fail: Deleting instance");
-            response.setStatusCode(404).end(res.cause().getMessage());
-          }
-        });
+    crudService
+        .deleteItem(body)
+        .onComplete(
+            res -> {
+              if (res.succeeded()) {
+                LOGGER.info("Success: Instance deleted;");
+                response.setStatusCode(200).end(res.result().toString());
+                // TODO: call auditing service here
+              } else {
+                LOGGER.error("Fail: Deleting instance");
+                response.setStatusCode(404).end(res.cause().getMessage());
+              }
+            });
     LOGGER.debug("Success: Authenticated instance creation request");
   }
 }

@@ -1,4 +1,4 @@
-package iudx.catalogue.server.apiserver.Item.handler;
+package iudx.catalogue.server.apiserver.item.handler;
 
 import static iudx.catalogue.server.apiserver.util.Constants.HEADER_TOKEN;
 import static iudx.catalogue.server.common.util.ResponseBuilderUtil.invalidUuidResponse;

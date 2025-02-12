@@ -1,4 +1,4 @@
-package iudx.catalogue.server.apiserver.Item.service;
+package iudx.catalogue.server.apiserver.item.service;
 
 import static iudx.catalogue.server.common.util.ResponseBuilderUtil.*;
 import static iudx.catalogue.server.database.elastic.util.BoolOperator.*;
@@ -10,7 +10,7 @@ import static iudx.catalogue.server.validator.util.Constants.CONTEXT;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
-import iudx.catalogue.server.apiserver.Item.model.Item;
+import iudx.catalogue.server.apiserver.item.model.Item;
 import iudx.catalogue.server.common.RespBuilder;
 import iudx.catalogue.server.common.util.DbResponseMessageBuilder;
 import iudx.catalogue.server.database.elastic.model.ElasticsearchResponse;
@@ -128,7 +128,6 @@ public class ItemServiceImpl implements ItemService {
 
   @Override
   public Future<JsonObject> updateItem(Item item) {
-    Promise<JsonObject> promise = Promise.promise();
     JsonObject doc = item.toJson();
     doc.put(CONTEXT, config.getString(CONTEXT));
     String id = doc.getString(ID);
@@ -144,6 +143,7 @@ public class ItemServiceImpl implements ItemService {
 
     // Set the source configuration to include specified fields
     queryModel.setIncludeFields(List.of(ID));
+    Promise<JsonObject> promise = Promise.promise();
     new Timer()
         .schedule(
             new TimerTask() {
@@ -240,9 +240,8 @@ public class ItemServiceImpl implements ItemService {
                                               successResp(
                                                   id, "Success: Item deleted successfully"));
                                         } else {
-                                          promise.fail(
-                                              new NoSuchElementException(
-                                                  "Fail: Doc doesn't exist, can't perform operation"));
+                                          promise.fail(new NoSuchElementException(
+                                              "Fail: Doc doesn't exist, can't perform operation"));
                                         }
                                       } else {
                                         Throwable cause = dbHandler.cause();
@@ -261,10 +260,7 @@ public class ItemServiceImpl implements ItemService {
 
   @Override
   public Future<JsonObject> getItem(JsonObject requestBody) {
-    Promise<JsonObject> promise = Promise.promise();
 
-    String index = config.getString(DOC_INDEX);
-    String id = requestBody.getString(ID);
     List<String> includeFields = null;
     if (requestBody.containsKey(INCLUDE_FIELDS)) {
       includeFields =
@@ -272,6 +268,7 @@ public class ItemServiceImpl implements ItemService {
               .map(Object::toString)
               .collect(Collectors.toList());
     }
+    String id = requestBody.getString(ID);
     Map<String, Object> termParams = new HashMap<>();
     termParams.put(FIELD, ID_KEYWORD); // Field to match
     termParams.put(VALUE, id); // The ID value to search for
@@ -284,7 +281,8 @@ public class ItemServiceImpl implements ItemService {
     queryModel.setOffset(FILTER_PAGINATION_FROM);
 
     LOGGER.debug("Info: Retrieving item");
-
+    Promise<JsonObject> promise = Promise.promise();
+    String index = config.getString(DOC_INDEX);
     esService
         .search(index, queryModel)
         .onComplete(

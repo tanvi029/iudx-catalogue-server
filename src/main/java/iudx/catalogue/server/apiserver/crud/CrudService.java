@@ -5,8 +5,8 @@ import static iudx.catalogue.server.util.Constants.*;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
-import iudx.catalogue.server.apiserver.Item.model.*;
-import iudx.catalogue.server.apiserver.Item.service.ItemService;
+import iudx.catalogue.server.apiserver.item.model.*;
+import iudx.catalogue.server.apiserver.item.service.ItemService;
 import java.util.NoSuchElementException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -26,17 +26,19 @@ public class CrudService {
     Item item = createItemFromType(itemType, requestBody);
     LOGGER.debug("Info: Inserting item");
 
-    itemService.createItem(item)
-        .onComplete(dbHandler -> {
-          if (dbHandler.failed()) {
-            LOGGER.error("Fail: Item creation failed; " + dbHandler.cause().getMessage());
-            promise.fail(dbHandler.cause());
-          } else {
-            JsonObject response = dbHandler.result();
-            LOGGER.info("Success: Item created;");
-            promise.complete(response);
-          }
-        });
+    itemService
+        .createItem(item)
+        .onComplete(
+            dbHandler -> {
+              if (dbHandler.failed()) {
+                LOGGER.error("Fail: Item creation failed; " + dbHandler.cause().getMessage());
+                promise.fail(dbHandler.cause());
+              } else {
+                JsonObject response = dbHandler.result();
+                LOGGER.info("Success: Item created;");
+                promise.complete(response);
+              }
+            });
 
     return promise.future();
   }
@@ -50,17 +52,19 @@ public class CrudService {
 
     LOGGER.debug("Info: Updating item");
 
-    itemService.updateItem(item)
-        .onComplete(dbHandler -> {
-          if (dbHandler.failed()) {
-            LOGGER.error("Fail: Item update failed; " + dbHandler.cause().getMessage());
-            promise.fail(dbHandler.cause());
-          } else {
-            JsonObject response = dbHandler.result();
-            LOGGER.info("Success: Item updated;");
-            promise.complete(response);
-          }
-        });
+    itemService
+        .updateItem(item)
+        .onComplete(
+            dbHandler -> {
+              if (dbHandler.failed()) {
+                LOGGER.error("Fail: Item update failed; " + dbHandler.cause().getMessage());
+                promise.fail(dbHandler.cause());
+              } else {
+                JsonObject response = dbHandler.result();
+                LOGGER.info("Success: Item updated;");
+                promise.complete(response);
+              }
+            });
 
     return promise.future();
   }
@@ -68,15 +72,18 @@ public class CrudService {
   public Future<JsonObject> getItem(JsonObject requestBody) {
     Promise<JsonObject> promise = Promise.promise();
 
-    itemService.getItem(requestBody).onComplete(res -> {
-      if (res.failed()) {
-        promise.fail(res.cause());
-      } else {
-        JsonObject response = res.result();
-        LOGGER.info("Success: Item retrieved;");
-        promise.complete(response);
-      }
-    });
+    itemService
+        .getItem(requestBody)
+        .onComplete(
+            res -> {
+              if (res.failed()) {
+                promise.fail(res.cause());
+              } else {
+                JsonObject response = res.result();
+                LOGGER.info("Success: Item retrieved;");
+                promise.complete(response);
+              }
+            });
 
     return promise.future();
   }
@@ -85,34 +92,38 @@ public class CrudService {
     Promise<JsonObject> promise = Promise.promise();
 
     String id = requestBody.getString(ID);
-    itemService.deleteItem(id)
-        .onComplete(dbHandler -> {
-          if (dbHandler.succeeded()) {
-            JsonObject response = dbHandler.result();
-            LOGGER.info("Success: Item deleted;");
-            if (TITLE_SUCCESS.equals(response.getString(TITLE))) {
-              promise.complete(response);
-            } else {
-              promise.fail(new NoSuchElementException("Fail: Doc doesn't exist, can't perform operation"));
-            }
-          } else {
-            Throwable cause = dbHandler.cause();
-            if (cause.getMessage().contains(TYPE_ITEM_NOT_FOUND)) {
-              LOGGER.error("Fail: Item not found; " + cause.getMessage());
-              promise.fail(cause.getMessage());
-            } else {
-              LOGGER.error("Fail: Item deletion failed; " + cause.getMessage());
-              promise.fail(cause.getMessage());
-            }
-          }
-        });
+    itemService
+        .deleteItem(id)
+        .onComplete(
+            dbHandler -> {
+              if (dbHandler.succeeded()) {
+                JsonObject response = dbHandler.result();
+                LOGGER.info("Success: Item deleted;");
+                if (TITLE_SUCCESS.equals(response.getString(TITLE))) {
+                  promise.complete(response);
+                } else {
+                  promise.fail(
+                      new NoSuchElementException(
+                          "Fail: Doc doesn't exist, can't perform operation"));
+                }
+              } else {
+                Throwable cause = dbHandler.cause();
+                if (cause.getMessage().contains(TYPE_ITEM_NOT_FOUND)) {
+                  LOGGER.error("Fail: Item not found; " + cause.getMessage());
+                  promise.fail(cause.getMessage());
+                } else {
+                  LOGGER.error("Fail: Item deletion failed; " + cause.getMessage());
+                  promise.fail(cause.getMessage());
+                }
+              }
+            });
 
     return promise.future();
   }
 
   private Item createItemFromType(String itemType, JsonObject requestBody) {
     switch (itemType) {
-      case ITEM_TYPE_OWNER :
+      case ITEM_TYPE_OWNER:
         return new Owner(requestBody);
       case ITEM_TYPE_COS:
         return new COS(requestBody);
@@ -131,4 +142,3 @@ public class CrudService {
     }
   }
 }
-

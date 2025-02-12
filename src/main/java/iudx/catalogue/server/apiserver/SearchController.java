@@ -1,6 +1,7 @@
 /**
  * <h1>SearchController.java</h1>
- * Callback handlers for CRUD
+ *
+ * <p>Callback handlers for CRUD</p>
  */
 
 package iudx.catalogue.server.apiserver;
@@ -42,7 +43,6 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-
 public final class SearchController {
   private static final Logger LOGGER = LogManager.getLogger(SearchController.class);
   private final QueryDecoder queryDecoder = new QueryDecoder();
@@ -54,10 +54,14 @@ public final class SearchController {
   private final String dxApiBasePath;
   private final String docIndex;
 
-  public SearchController(Router router, ElasticsearchService esService,
-                          GeocodingService geoService,
-                          NLPSearchService nlpService, FailureHandler failureHandler,
-                          String dxApiBasePath, String docIndex) {
+  public SearchController(
+      Router router,
+      ElasticsearchService esService,
+      GeocodingService geoService,
+      NLPSearchService nlpService,
+      FailureHandler failureHandler,
+      String dxApiBasePath,
+      String docIndex) {
     this.router = router;
     this.esService = esService;
     this.geoService = geoService;
@@ -107,15 +111,13 @@ public final class SearchController {
    */
   public void searchHandler(RoutingContext routingContext) {
 
-    String path = routingContext.normalisedPath();
-
-    HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
     response.putHeader(HEADER_CONTENT_TYPE, MIME_APPLICATION_JSON);
 
     JsonObject requestBody = new JsonObject();
 
     /* HTTP request instance/host details */
+    HttpServerRequest request = routingContext.request();
     String instanceId = request.getHeader(HEADER_INSTANCE);
 
     MultiMap queryParameters = routingContext.queryParams();
@@ -126,24 +128,24 @@ public final class SearchController {
     /* validating proper actual query parameters from request */
     if ((request.getParam(PROPERTY) == null || request.getParam(VALUE) == null)
         && (request.getParam(GEOPROPERTY) == null
-        || request.getParam(GEORELATION) == null
-        || request.getParam(GEOMETRY) == null
-        || request.getParam(COORDINATES) == null)
-        && request
-        .getParam(Q_VALUE) == null) {
+            || request.getParam(GEORELATION) == null
+            || request.getParam(GEOMETRY) == null
+            || request.getParam(COORDINATES) == null)
+        && request.getParam(Q_VALUE) == null) {
 
       LOGGER.error("Fail: Invalid Syntax");
-      response.setStatusCode(400)
-          .end(new RespBuilder()
-              .withType(TYPE_INVALID_SYNTAX)
-              .withTitle(TITLE_INVALID_SYNTAX)
-              .withDetail("Mandatory field(s) not provided")
-              .getResponse());
+      response
+          .setStatusCode(400)
+          .end(
+              new RespBuilder()
+                  .withType(TYPE_INVALID_SYNTAX)
+                  .withTitle(TITLE_INVALID_SYNTAX)
+                  .withDetail("Mandatory field(s) not provided")
+                  .getResponse());
       return;
 
       /* checking the values of the query parameters */
-    } else if (request.getParam(PROPERTY) != null
-        && !request.getParam(PROPERTY).isBlank()) {
+    } else if (request.getParam(PROPERTY) != null && !request.getParam(PROPERTY).isBlank()) {
 
       /* converting query parameters in json */
       requestBody = QueryMapper.map2Json(queryParameters);
@@ -153,19 +155,20 @@ public final class SearchController {
         && GEORELS.contains(request.getParam(GEORELATION))
         && request.getParam(GEOPROPERTY).equals(GEO_PROPERTY)) {
       requestBody = QueryMapper.map2Json(queryParameters);
-    } else if (request.getParam(Q_VALUE) != null
-        && !request.getParam(Q_VALUE).isBlank()) {
+    } else if (request.getParam(Q_VALUE) != null && !request.getParam(Q_VALUE).isBlank()) {
       /* checking the values of the query parameters */
 
       requestBody = QueryMapper.map2Json(queryParameters);
 
     } else {
-      response.setStatusCode(400)
-          .end(new RespBuilder()
-              .withType(TYPE_INVALID_GEO_VALUE)
-              .withTitle(TITLE_INVALID_GEO_VALUE)
-              .withDetail(TITLE_INVALID_QUERY_PARAM_VALUE)
-              .getResponse());
+      response
+          .setStatusCode(400)
+          .end(
+              new RespBuilder()
+                  .withType(TYPE_INVALID_GEO_VALUE)
+                  .withTitle(TITLE_INVALID_GEO_VALUE)
+                  .withDetail(TITLE_INVALID_QUERY_PARAM_VALUE)
+                  .getResponse());
       return;
     }
 
@@ -173,67 +176,71 @@ public final class SearchController {
       requestBody.put(HEADER_INSTANCE, instanceId);
 
       JsonObject resp = QueryMapper.validateQueryParam(requestBody);
+      String path = routingContext.normalisedPath();
       if (resp.getString(STATUS).equals(SUCCESS)) {
         if (path.equals(dxApiBasePath + ROUTE_SEARCH)) {
-          searchQuery(requestBody).onComplete(handler -> {
-            if (handler.succeeded()) {
-              JsonObject resultJson = handler.result();
-              String status = resultJson.getString(STATUS);
-              if (status.equalsIgnoreCase(SUCCESS)) {
-                LOGGER.info("Success: search query");
-                response.setStatusCode(200);
-              } else if (status.equalsIgnoreCase(PARTIAL_CONTENT)) {
-                LOGGER.info("Success: search query");
-                response.setStatusCode(206);
-              } else {
-                LOGGER.error("Fail: search query");
-                response.setStatusCode(400);
-              }
-              response.end(resultJson.toString());
-            } else if (handler.failed()) {
-              LOGGER.error("Fail: Search;" + handler.cause().getMessage());
-              response.setStatusCode(400).end(handler.cause().getMessage());
-            }
-          });
+          searchQuery(requestBody)
+              .onComplete(
+                  handler -> {
+                    if (handler.succeeded()) {
+                      JsonObject resultJson = handler.result();
+                      String status = resultJson.getString(STATUS);
+                      if (status.equalsIgnoreCase(SUCCESS)) {
+                        LOGGER.info("Success: search query");
+                        response.setStatusCode(200);
+                      } else if (status.equalsIgnoreCase(PARTIAL_CONTENT)) {
+                        LOGGER.info("Success: search query");
+                        response.setStatusCode(206);
+                      } else {
+                        LOGGER.error("Fail: search query");
+                        response.setStatusCode(400);
+                      }
+                      response.end(resultJson.toString());
+                    } else if (handler.failed()) {
+                      LOGGER.error("Fail: Search;" + handler.cause().getMessage());
+                      response.setStatusCode(400).end(handler.cause().getMessage());
+                    }
+                  });
         } else {
-          countQuery(requestBody).onComplete(handler -> {
-            if (handler.succeeded()) {
-              JsonObject resultJson = handler.result();
-              String status = resultJson.getString(STATUS);
-              if (status.equalsIgnoreCase(SUCCESS)) {
-                LOGGER.info("Success: count query");
-                response.setStatusCode(200);
-              } else if (status.equalsIgnoreCase(PARTIAL_CONTENT)) {
-                LOGGER.info("Success: count query");
-                response.setStatusCode(206);
-              } else {
-                LOGGER.error("Fail: count query");
-                response.setStatusCode(400);
-              }
-              response.end(resultJson.toString());
-            } else if (handler.failed()) {
-              LOGGER.error("Fail: Count;" + handler.cause().getMessage());
-              response.setStatusCode(400)
-                  .end(handler.cause().getMessage());
-            }
-          });
+          countQuery(requestBody)
+              .onComplete(
+                  handler -> {
+                    if (handler.succeeded()) {
+                      JsonObject resultJson = handler.result();
+                      String status = resultJson.getString(STATUS);
+                      if (status.equalsIgnoreCase(SUCCESS)) {
+                        LOGGER.info("Success: count query");
+                        response.setStatusCode(200);
+                      } else if (status.equalsIgnoreCase(PARTIAL_CONTENT)) {
+                        LOGGER.info("Success: count query");
+                        response.setStatusCode(206);
+                      } else {
+                        LOGGER.error("Fail: count query");
+                        response.setStatusCode(400);
+                      }
+                      response.end(resultJson.toString());
+                    } else if (handler.failed()) {
+                      LOGGER.error("Fail: Count;" + handler.cause().getMessage());
+                      response.setStatusCode(400).end(handler.cause().getMessage());
+                    }
+                  });
         }
       } else {
         LOGGER.error("Fail: Search/Count; Invalid request query parameters");
         LOGGER.debug(resp);
-        response.setStatusCode(400)
-            .end(resp.toString());
+        response.setStatusCode(400).end(resp.toString());
       }
     } else {
       LOGGER.error("Fail: Search/Count; Invalid request query parameters");
-      response.setStatusCode(400)
-          .end(new RespBuilder()
-              .withType(TYPE_INVALID_SYNTAX)
-              .withTitle(TITLE_INVALID_SYNTAX)
-              .withDetail(TITLE_INVALID_QUERY_PARAM_VALUE)
-              .getResponse());
+      response
+          .setStatusCode(400)
+          .end(
+              new RespBuilder()
+                  .withType(TYPE_INVALID_SYNTAX)
+                  .withTitle(TITLE_INVALID_SYNTAX)
+                  .withDetail(TITLE_INVALID_QUERY_PARAM_VALUE)
+                  .getResponse());
     }
-
   }
 
   public Future<JsonObject> searchQuery(JsonObject request) {
@@ -260,26 +267,30 @@ public final class SearchController {
     QueryModel queryModel = (QueryModel) query.getValue(QUERY_KEY);
     LOGGER.debug("Info: Query constructed;" + queryModel.getQueries().getQueryType());
 
-    esService.search(docIndex, queryModel).onComplete(searchRes -> {
-      if (searchRes.succeeded()) {
-        LOGGER.debug("Success: Successful DB request");
-        List<ElasticsearchResponse> response = searchRes.result();
-        DbResponseMessageBuilder responseMsg = new DbResponseMessageBuilder();
-        responseMsg.statusSuccess().setTotalHits(response.size());
-        response.stream()
-            .map(ElasticsearchResponse::getSource)
-            .peek(source -> {
-              source.remove(SUMMARY_KEY);
-              source.remove(WORD_VECTOR_KEY);
-            })
-            .forEach(responseMsg::addResult);
+    esService
+        .search(docIndex, queryModel)
+        .onComplete(
+            searchRes -> {
+              if (searchRes.succeeded()) {
+                LOGGER.debug("Success: Successful DB request");
+                List<ElasticsearchResponse> response = searchRes.result();
+                DbResponseMessageBuilder responseMsg = new DbResponseMessageBuilder();
+                responseMsg.statusSuccess().setTotalHits(response.size());
+                response.stream()
+                    .map(ElasticsearchResponse::getSource)
+                    .peek(
+                        source -> {
+                          source.remove(SUMMARY_KEY);
+                          source.remove(WORD_VECTOR_KEY);
+                        })
+                    .forEach(responseMsg::addResult);
 
-        promise.complete(responseMsg.getResponse());
-      } else {
-        LOGGER.error("Fail: DB Request;" + searchRes.cause().getMessage());
-        promise.fail(internalErrorResp());
-      }
-    });
+                promise.complete(responseMsg.getResponse());
+              } else {
+                LOGGER.error("Fail: DB Request;" + searchRes.cause().getMessage());
+                promise.fail(internalErrorResp());
+              }
+            });
     return promise.future();
   }
 
@@ -306,23 +317,26 @@ public final class SearchController {
     QueryModel queryModel = (QueryModel) query.getValue(QUERY_KEY);
     LOGGER.debug("Info: Query constructed;" + queryModel.toString());
 
-    esService.count(docIndex, queryModel).onComplete(searchRes -> {
-      if (searchRes.succeeded()) {
-        LOGGER.debug("Success: Successful DB request");
-        DbResponseMessageBuilder responseMsg = new DbResponseMessageBuilder();
-        responseMsg.statusSuccess().setTotalHits(searchRes.result());
-        promise.complete(responseMsg.getResponse());
-      } else {
-        LOGGER.error("Fail: DB Request;" + searchRes.cause().getMessage());
-        promise.fail(internalErrorResp());
-      }
-    });
+    esService
+        .count(docIndex, queryModel)
+        .onComplete(
+            searchRes -> {
+              if (searchRes.succeeded()) {
+                LOGGER.debug("Success: Successful DB request");
+                DbResponseMessageBuilder responseMsg = new DbResponseMessageBuilder();
+                responseMsg.statusSuccess().setTotalHits(searchRes.result());
+                promise.complete(responseMsg.getResponse());
+              } else {
+                LOGGER.error("Fail: DB Request;" + searchRes.cause().getMessage());
+                promise.fail(internalErrorResp());
+              }
+            });
     return promise.future();
   }
 
   /**
-   * Handles the NLP search request from the client and responds with
-   * a JSON array of search results.
+   * Handles the NLP search request from the client and responds with a JSON array of search
+   * results.
    *
    * @param routingContext the routing context of the request
    */
@@ -338,7 +352,8 @@ public final class SearchController {
     } catch (Exception e) {
       LOGGER.info("Missing query parameter");
       RespBuilder respBuilder =
-          new RespBuilder().withType(TYPE_MISSING_PARAMS)
+          new RespBuilder()
+              .withType(TYPE_MISSING_PARAMS)
               .withTitle(TITLE_MISSING_PARAMS)
               .withDetail("Query param q is missing");
 
@@ -346,72 +361,84 @@ public final class SearchController {
       return;
     }
 
-    nlpService.search(query).onComplete(res -> {
-      if (res.succeeded()) {
-        JsonArray result = res.result().getJsonArray("result");
-        embeddings.add(result);
-        String location = res.result().getString("location");
-        if (location.equals("EMPTY")) {
-          nlpSearchQuery(embeddings).onComplete(handler -> {
-            if (handler.succeeded()) {
-              JsonObject resultJson = handler.result();
-              String status = resultJson.getString(STATUS);
-              if (status.equalsIgnoreCase(SUCCESS)) {
-                LOGGER.info("Success: search query");
-                response.setStatusCode(200);
-              } else if (status.equalsIgnoreCase(PARTIAL_CONTENT)) {
-                LOGGER.info("Success: search query");
-                response.setStatusCode(206);
-              } else {
-                LOGGER.error("Fail: search query");
-                response.setStatusCode(400);
-              }
-              response.end(resultJson.toString());
-            } else if (handler.failed()) {
-              LOGGER.error("Fail: Search;" + handler.cause().getMessage());
-              response.setStatusCode(400)
-                  .end(handler.cause().getMessage());
-            }
-          });
-        } else {
-          geoService.geocoder(location)
-              .onComplete(ar -> {
-                if (ar.succeeded()) {
-                  JsonObject results = new JsonObject(ar.result());
-                  LOGGER.debug("Info: geocoding result - " + results);
-                  nlpSearchLocationQuery(embeddings, results).onComplete(handler -> {
-                    if (handler.succeeded()) {
-                      JsonObject resultJson = handler.result();
-                      String status = resultJson.getString(STATUS);
-                      if (status.equalsIgnoreCase(SUCCESS)) {
-                        LOGGER.info("Success: search query");
-                        response.setStatusCode(200);
-                      } else if (status.equalsIgnoreCase(PARTIAL_CONTENT)) {
-                        LOGGER.info("Success: search query");
-                        response.setStatusCode(206);
-                      } else {
-                        LOGGER.error("Fail: search query");
-                        response.setStatusCode(400);
-                      }
-                      response.end(resultJson.toString());
-                    } else if (handler.failed()) {
-                      LOGGER.error("Fail: Search;" + handler.cause().getMessage());
-                      response.setStatusCode(400)
-                          .end(handler.cause().getMessage());
-                    }
-                  });
+    nlpService
+        .search(query)
+        .onComplete(
+            res -> {
+              if (res.succeeded()) {
+                JsonArray result = res.result().getJsonArray("result");
+                embeddings.add(result);
+                String location = res.result().getString("location");
+                if (location.equals("EMPTY")) {
+                  nlpSearchQuery(embeddings)
+                      .onComplete(
+                          handler -> {
+                            if (handler.succeeded()) {
+                              JsonObject resultJson = handler.result();
+                              String status = resultJson.getString(STATUS);
+                              if (status.equalsIgnoreCase(SUCCESS)) {
+                                LOGGER.info("Success: search query");
+                                response.setStatusCode(200);
+                              } else if (status.equalsIgnoreCase(PARTIAL_CONTENT)) {
+                                LOGGER.info("Success: search query");
+                                response.setStatusCode(206);
+                              } else {
+                                LOGGER.error("Fail: search query");
+                                response.setStatusCode(400);
+                              }
+                              response.end(resultJson.toString());
+                            } else if (handler.failed()) {
+                              LOGGER.error("Fail: Search;" + handler.cause().getMessage());
+                              response.setStatusCode(400).end(handler.cause().getMessage());
+                            }
+                          });
                 } else {
-                  LOGGER.info("Failed to get bounding box");
-                  routingContext.response().setStatusCode(404)
-                      .end(ar.cause().getMessage());
+                  geoService
+                      .geocoder(location)
+                      .onComplete(
+                          ar -> {
+                            if (ar.succeeded()) {
+                              JsonObject results = new JsonObject(ar.result());
+                              LOGGER.debug("Info: geocoding result - " + results);
+                              nlpSearchLocationQuery(embeddings, results)
+                                  .onComplete(
+                                      handler -> {
+                                        if (handler.succeeded()) {
+                                          JsonObject resultJson = handler.result();
+                                          String status = resultJson.getString(STATUS);
+                                          if (status.equalsIgnoreCase(SUCCESS)) {
+                                            LOGGER.info("Success: search query");
+                                            response.setStatusCode(200);
+                                          } else if (status.equalsIgnoreCase(PARTIAL_CONTENT)) {
+                                            LOGGER.info("Success: search query");
+                                            response.setStatusCode(206);
+                                          } else {
+                                            LOGGER.error("Fail: search query");
+                                            response.setStatusCode(400);
+                                          }
+                                          response.end(resultJson.toString());
+                                        } else if (handler.failed()) {
+                                          LOGGER.error(
+                                              "Fail: Search;" + handler.cause().getMessage());
+                                          response
+                                              .setStatusCode(400)
+                                              .end(handler.cause().getMessage());
+                                        }
+                                      });
+                            } else {
+                              LOGGER.info("Failed to get bounding box");
+                              routingContext
+                                  .response()
+                                  .setStatusCode(404)
+                                  .end(ar.cause().getMessage());
+                            }
+                          });
                 }
-              });
-        }
-      } else {
-        LOGGER.info("Failed to get embeddings");
-        routingContext.response().setStatusCode(400).end();
-      }
-    });
+              } else {
+                LOGGER.info("Failed to get embeddings");
+                routingContext.response().setStatusCode(400).end();
+              }
+            });
   }
 
   /**
@@ -419,58 +446,62 @@ public final class SearchController {
    * search method on the ElasticSearch client.
    *
    * @param request the request embeddings
-   * @return a {@link Future<JsonObject>} that completes with the search results when the Elasticsearch
-   * client successfully processes the query, or fails with an error response if the request fails.
+   * @return Future<{@link io.vertx.core.json.JsonObject}>
+   *     that completes with the search results when the Elasticsearch client successfully
+   *     processes the query, or fails with an error response if the request fails.
    */
   public Future<JsonObject> nlpSearchQuery(JsonArray request) {
     Promise<JsonObject> promise = Promise.promise();
     JsonArray embeddings = request.getJsonArray(0);
     QueryModel queryModel = new QueryModel();
-    queryModel.setQueries(new QueryModel(QueryType.SCRIPT_SCORE, Map.of("query_vector",
-        embeddings)));
+    queryModel.setQueries(
+        new QueryModel(QueryType.SCRIPT_SCORE, Map.of("query_vector", embeddings)));
     queryModel.setExcludeFields(List.of("_word_vector"));
-    esService.search(docIndex, queryModel).onComplete(
-        searchRes -> {
-          if (searchRes.succeeded()) {
-            LOGGER.debug("Success:Successful DB request");
-            List<ElasticsearchResponse> response = searchRes.result();
-            DbResponseMessageBuilder responseMsg = new DbResponseMessageBuilder();
-            responseMsg.statusSuccess().setTotalHits(response.size());
-            response.stream()
-                .map(ElasticsearchResponse::getSource)
-                .peek(source -> {
-                  source.remove(SUMMARY_KEY);
-                  source.remove(WORD_VECTOR_KEY);
-                })
-                .forEach(responseMsg::addResult);
+    esService
+        .search(docIndex, queryModel)
+        .onComplete(
+            searchRes -> {
+              if (searchRes.succeeded()) {
+                LOGGER.debug("Success:Successful DB request");
+                List<ElasticsearchResponse> response = searchRes.result();
+                DbResponseMessageBuilder responseMsg = new DbResponseMessageBuilder();
+                responseMsg.statusSuccess().setTotalHits(response.size());
+                response.stream()
+                    .map(ElasticsearchResponse::getSource)
+                    .peek(
+                        source -> {
+                          source.remove(SUMMARY_KEY);
+                          source.remove(WORD_VECTOR_KEY);
+                        })
+                    .forEach(responseMsg::addResult);
 
-            promise.complete(responseMsg.getResponse());
-          } else {
-            LOGGER.error("Fail: DB request;" + searchRes.cause().getMessage());
-            promise.fail(internalErrorResp());
-          }
-        });
+                promise.complete(responseMsg.getResponse());
+              } else {
+                LOGGER.error("Fail: DB request;" + searchRes.cause().getMessage());
+                promise.fail(internalErrorResp());
+              }
+            });
     return promise.future();
   }
 
-  public Future<JsonObject> nlpSearchLocationQuery(
-      JsonArray request, JsonObject queryParams) {
+  public Future<JsonObject> nlpSearchLocationQuery(JsonArray request, JsonObject queryParams) {
     Promise<JsonObject> promise = Promise.promise();
     JsonArray embeddings = request.getJsonArray(0);
     JsonArray params = queryParams.getJsonArray(RESULTS);
 
-    List<Future> futures = params.stream()
-        .map(param -> {
-          try {
-            return scriptLocationSearch(embeddings, (JsonObject) param);
-          } catch (Exception e) {
-            LOGGER.error("Error during scriptLocationSearch for param: " + param, e);
-            return Future.failedFuture(e); // returns a Future<JsonObject> in case of an error
-          }
-        })
-        .collect(Collectors.toList());
-
-
+    List<Future> futures =
+        params.stream()
+            .map(
+                param -> {
+                  try {
+                    return scriptLocationSearch(embeddings, (JsonObject) param);
+                  } catch (Exception e) {
+                    LOGGER.error("Error during scriptLocationSearch for param: " + param, e);
+                    return Future.failedFuture(
+                        e); // returns a Future<JsonObject> in case of an error
+                  }
+                })
+            .collect(Collectors.toList());
 
     // When all futures return, respond back with the result object in the response
     CompositeFuture.all(futures)
@@ -478,14 +509,15 @@ public final class SearchController {
             ar -> {
               if (ar.succeeded()) {
                 JsonArray results = new JsonArray();
-                ar.result().list().forEach(
-                    h -> {
-                      JsonArray hr = ((JsonObject) h).getJsonArray(RESULTS);
-                      if (hr != null && !hr.isEmpty()) {
-                        hr.stream().forEach(results::add);
-                      }
-                    }
-                );
+                ar.result()
+                    .list()
+                    .forEach(
+                        h -> {
+                          JsonArray hr = ((JsonObject) h).getJsonArray(RESULTS);
+                          if (hr != null && !hr.isEmpty()) {
+                            hr.stream().forEach(results::add);
+                          }
+                        });
                 if (results.isEmpty()) {
                   promise.complete(itemNotFoundJsonResp("NLP Search Failed"));
                 } else {
@@ -536,34 +568,54 @@ public final class SearchController {
 
     // Adding MatchQuery clauses for each of the fields based on the queryParams
     if (queryParams.containsKey(BOROUGH)) {
-      boolQueryModel.addShouldQuery(new QueryModel(QueryType.MATCH, Map.of(
-          FIELD, "_geosummary._geocoded.results.borough",
-          VALUE, queryParams.getString(BOROUGH)
-      )));
+      boolQueryModel.addShouldQuery(
+          new QueryModel(
+              QueryType.MATCH,
+              Map.of(
+                  FIELD,
+                  "_geosummary._geocoded.results.borough",
+                  VALUE,
+                  queryParams.getString(BOROUGH))));
     }
     if (queryParams.containsKey(LOCALITY)) {
-      boolQueryModel.addShouldQuery(new QueryModel(QueryType.MATCH, Map.of(
-          FIELD, "_geosummary._geocoded.results.locality",
-          VALUE, queryParams.getString(LOCALITY)
-      )));
+      boolQueryModel.addShouldQuery(
+          new QueryModel(
+              QueryType.MATCH,
+              Map.of(
+                  FIELD,
+                  "_geosummary._geocoded.results.locality",
+                  VALUE,
+                  queryParams.getString(LOCALITY))));
     }
     if (queryParams.containsKey(COUNTY)) {
-      boolQueryModel.addShouldQuery(new QueryModel(QueryType.MATCH, Map.of(
-          FIELD, "_geosummary._geocoded.results.county",
-          VALUE, queryParams.getString(COUNTY)
-      )));
+      boolQueryModel.addShouldQuery(
+          new QueryModel(
+              QueryType.MATCH,
+              Map.of(
+                  FIELD,
+                  "_geosummary._geocoded.results.county",
+                  VALUE,
+                  queryParams.getString(COUNTY))));
     }
     if (queryParams.containsKey(REGION)) {
-      boolQueryModel.addShouldQuery(new QueryModel(QueryType.MATCH, Map.of(
-          FIELD, "_geosummary._geocoded.results.region",
-          VALUE, queryParams.getString(REGION)
-      )));
+      boolQueryModel.addShouldQuery(
+          new QueryModel(
+              QueryType.MATCH,
+              Map.of(
+                  FIELD,
+                  "_geosummary._geocoded.results.region",
+                  VALUE,
+                  queryParams.getString(REGION))));
     }
     if (queryParams.containsKey(COUNTRY)) {
-      boolQueryModel.addShouldQuery(new QueryModel(QueryType.MATCH, Map.of(
-          FIELD, "_geosummary._geocoded.results.country",
-          VALUE, queryParams.getString(COUNTRY)
-      )));
+      boolQueryModel.addShouldQuery(
+          new QueryModel(
+              QueryType.MATCH,
+              Map.of(
+                  FIELD,
+                  "_geosummary._geocoded.results.country",
+                  VALUE,
+                  queryParams.getString(COUNTRY))));
     }
 
     // Set minimum_should_match to 1
@@ -572,25 +624,33 @@ public final class SearchController {
     // Geo shape filter
     if (queryParams.containsKey(BBOX)) {
       JsonArray bboxCoords = queryParams.getJsonArray(BBOX);
-      JsonArray coordinates = new JsonArray()
-          .add(new JsonArray()
-              .add(bboxCoords.getFloat(0)) // minLon
-              .add(bboxCoords.getFloat(3))) // maxLat
-          .add(new JsonArray()
-              .add(bboxCoords.getFloat(2)) // maxLon
-              .add(bboxCoords.getFloat(1))); // minLat
+      JsonArray coordinates =
+          new JsonArray()
+              .add(
+                  new JsonArray()
+                      .add(bboxCoords.getFloat(0)) // minLon
+                      .add(bboxCoords.getFloat(3))) // maxLat
+              .add(
+                  new JsonArray()
+                      .add(bboxCoords.getFloat(2)) // maxLon
+                      .add(bboxCoords.getFloat(1))); // minLat
       boolQueryModel.addFilterQuery(
-          new QueryModel(QueryType.GEO_SHAPE, Map.of(
-              GEOPROPERTY, "location.geometry",
-              TYPE, GEO_BBOX,
-              COORDINATES, coordinates,
-              "relation", INTERSECTS
-          )));
+          new QueryModel(
+              QueryType.GEO_SHAPE,
+              Map.of(
+                  GEOPROPERTY,
+                  "location.geometry",
+                  TYPE,
+                  GEO_BBOX,
+                  COORDINATES,
+                  coordinates,
+                  "relation",
+                  INTERSECTS)));
     }
 
     // Script score for cosine similarity
-    return new QueryModel(QueryType.SCRIPT_SCORE, Map.of(
-        "query_vector", queryVector, "custom_query", boolQueryModel.toJson()));
+    return new QueryModel(
+        QueryType.SCRIPT_SCORE,
+        Map.of("query_vector", queryVector, "custom_query", boolQueryModel.toJson()));
   }
-
 }

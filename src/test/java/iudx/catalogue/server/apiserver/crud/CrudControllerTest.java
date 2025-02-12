@@ -20,7 +20,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
-import iudx.catalogue.server.apiserver.Item.handler.ItemLinkValidationHandler;
+import iudx.catalogue.server.apiserver.item.handler.ItemLinkValidationHandler;
 import iudx.catalogue.server.auditing.handler.AuditHandler;
 import iudx.catalogue.server.authenticator.handler.AuthenticationHandler;
 import iudx.catalogue.server.authenticator.handler.AuthorizationHandler;

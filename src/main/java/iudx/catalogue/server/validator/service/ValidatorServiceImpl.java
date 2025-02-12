@@ -34,7 +34,6 @@ import static iudx.catalogue.server.validator.util.Constants.ACTIVE;
 import static iudx.catalogue.server.validator.util.Constants.CONTEXT;
 import static iudx.catalogue.server.validator.util.Constants.ID_KEYWORD;
 import static iudx.catalogue.server.validator.util.Constants.ITEM_CREATED_AT;
-import static iudx.catalogue.server.validator.util.Constants.ITEM_EXISTS_QUERY;
 import static iudx.catalogue.server.validator.util.Constants.ITEM_STATUS;
 import static iudx.catalogue.server.validator.util.Constants.VALIDATION_FAILURE_MSG;
 
@@ -79,11 +78,12 @@ public class ValidatorServiceImpl implements ValidatorService {
 
   private static final Logger LOGGER = LogManager.getLogger(ValidatorServiceImpl.class);
 
-  /**
-   * ES client.
-   */
+  /** ES client. */
   static ElasticsearchService esService;
 
+  private final String docIndex;
+  private final boolean isUacInstance;
+  private final String vocContext;
   private Future<String> isValidSchema;
   private Validator resourceValidator;
   private Validator resourceGroupValidator;
@@ -98,20 +98,18 @@ public class ValidatorServiceImpl implements ValidatorService {
   private Validator mlayerDatasetValidator;
   private Validator stack4PatchValidator;
   private Validator stackSchema4Post;
-  private String docIndex;
-  private boolean isUacInstance;
-  private String vocContext;
 
   /**
    * Constructs a new ValidatorServiceImpl object with the specified OldElasticClient and docIndex.
    *
-   * @param esService the ElasticsearchService object to use for interacting with the Elasticsearch instance
-   * @param docIndex  the index name to use for storing documents in Elasticsearch
+   * @param esService the ElasticsearchService object to use for interacting with the Elasticsearch
+   *     instance
+   * @param docIndex the index name to use for storing documents in Elasticsearch
    */
   public ValidatorServiceImpl(
       ElasticsearchService esService, String docIndex, boolean isUacInstance, String vocContext) {
 
-    this.esService = esService;
+    ValidatorServiceImpl.esService = esService;
     this.docIndex = docIndex;
     this.isUacInstance = isUacInstance;
     this.vocContext = vocContext;
@@ -134,9 +132,7 @@ public class ValidatorServiceImpl implements ValidatorService {
     }
   }
 
-  /**
-   * Generates timestamp with timezone +05:30.
-   */
+  /** Generates timestamp with timezone +05:30. */
   public static String getUtcDatetimeAsString() {
     DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ssZ");
     df.setTimeZone(TimeZone.getTimeZone("IST"));
@@ -187,8 +183,6 @@ public class ValidatorServiceImpl implements ValidatorService {
    */
   @Override
   public Future<JsonObject> validateSchema(JsonObject request) {
-
-    Promise<JsonObject> promise = Promise.promise();
     LOGGER.debug("Info: Reached Validator service validate schema");
     String itemType = null;
     itemType =
@@ -196,7 +190,7 @@ public class ValidatorServiceImpl implements ValidatorService {
     request.remove("api");
 
     LOGGER.debug("Info: itemType: " + itemType);
-
+    Promise<JsonObject> promise = Promise.promise();
     switch (itemType) {
       case ITEM_TYPE_RESOURCE:
         isValidSchema = resourceValidator.validate(request.toString());
@@ -230,9 +224,19 @@ public class ValidatorServiceImpl implements ValidatorService {
     return validateSchema();
   }
 
-  /*
-   * {@inheritDoc}
-   */
+  private Future<JsonObject> validateSchema() {
+    Promise<JsonObject> promise = Promise.promise();
+    isValidSchema
+        .onSuccess(x -> promise.complete(new JsonObject().put(STATUS, SUCCESS)))
+        .onFailure(
+            x -> {
+              LOGGER.error("Fail: Invalid Schema");
+              LOGGER.error(x.getMessage());
+              promise.fail(String.valueOf(new JsonArray().add(x.getMessage())));
+            });
+    return promise.future();
+  }
+
   @Override
   public Future<JsonObject> validateItem(JsonObject request) {
     request.put(CONTEXT, vocContext);
@@ -269,386 +273,6 @@ public class ValidatorServiceImpl implements ValidatorService {
     return Future.failedFuture("Invalid Item Type");
   }
 
-  private Future<JsonObject> validateResourceGroup(JsonObject request, String method) {
-    //    validateId(request, isUacInstance);
-    Promise<JsonObject> promise = Promise.promise();
-    if (!isUacInstance && !request.containsKey(ID)) {
-      UUID uuid = UUID.randomUUID();
-      request.put(ID, uuid.toString());
-    }
-
-    request.put(ITEM_STATUS, ACTIVE).put(ITEM_CREATED_AT, getUtcDatetimeAsString());
-    String provider = request.getString(PROVIDER);
-
-    QueryModel boolIdQuery = new QueryModel(QueryType.BOOL);
-    boolIdQuery.addMustQuery(new QueryModel(QueryType.MATCH, Map.of(FIELD, ID_KEYWORD, VALUE,
-        provider)));
-    QueryModel boolRsQuery = new QueryModel(QueryType.BOOL);
-    boolRsQuery.addMustQuery(new QueryModel(QueryType.MATCH, Map.of(FIELD, "type.keyword", VALUE,
-        ITEM_TYPE_RESOURCE_GROUP)));
-    boolRsQuery.addMustQuery(new QueryModel(QueryType.MATCH, Map.of(FIELD, NAME +
-            ".keyword", VALUE,
-        request.getString(NAME))));
-    QueryModel finalQuery = new QueryModel(QueryType.BOOL);
-    finalQuery.setShouldQueries(List.of(boolIdQuery, boolRsQuery));
-    QueryModel queryModel = new QueryModel();
-    queryModel.setQueries(finalQuery);
-    queryModel.setIncludeFields(List.of("type"));
-    LOGGER.debug(queryModel.toJson());
-    esService.search(docIndex, queryModel)
-        .onComplete(res -> {
-          if (res.failed()) {
-            LOGGER.debug("Fail: DB Error");
-            promise.fail(VALIDATION_FAILURE_MSG);
-          }
-          List<ElasticsearchResponse> responseList = res.result();
-          DbResponseMessageBuilder responseMsg = new DbResponseMessageBuilder();
-          responseMsg.statusSuccess();
-          responseMsg.setTotalHits(responseList.size());
-          responseMsg.addResult();
-          responseList.stream()
-              .map(ElasticsearchResponse::getSource)
-              .peek(source -> {
-                source.remove(SUMMARY_KEY);
-                source.remove(WORD_VECTOR_KEY);
-              })
-              .forEach(responseMsg::addResult);
-          String returnType = getReturnTypeForValidation(responseMsg.getResponse());
-          LOGGER.debug(returnType);
-          if (responseMsg.getResponse().getInteger(TOTAL_HITS) < 1 ||
-              !returnType.contains(ITEM_TYPE_PROVIDER)) {
-            LOGGER.debug("Provider does not exist");
-            promise.fail("Fail: Provider item doesn't exist");
-          } else if (method.equalsIgnoreCase(REQUEST_POST)
-              && returnType.contains(ITEM_TYPE_RESOURCE_GROUP)) {
-            LOGGER.debug("RG already exists");
-            promise.fail("Fail: Resource Group item already exists");
-          } else {
-            promise.complete(request);
-          }
-        });
-    return promise.future();
-  }
-
-  private Future<JsonObject> validateProvider(JsonObject request, String method) {
-    // Validate if Provider
-    //    validateId(request, handler, isUacInstance);
-    if (!isUacInstance && !request.containsKey(ID)) {
-      UUID uuid = UUID.randomUUID();
-      request.put(ID, uuid.toString());
-    }
-
-    request.put(ITEM_STATUS, ACTIVE).put(ITEM_CREATED_AT, getUtcDatetimeAsString());
-    String resourceServer = request.getString(RESOURCE_SVR);
-    String ownerUserId = request.getString(PROVIDER_USER_ID);
-    String resourceServerUrl = request.getString(RESOURCE_SERVER_URL);
-
-    QueryModel boolIdQuery = new QueryModel(QueryType.BOOL);
-    boolIdQuery.addMustQuery(new QueryModel(QueryType.MATCH, Map.of(FIELD, ID_KEYWORD, VALUE,
-        resourceServer)));
-    QueryModel boolRsQuery = new QueryModel(QueryType.BOOL);
-    boolRsQuery.addMustQuery(
-        new QueryModel(QueryType.MATCH, Map.of(FIELD, "ownerUserId.keyword", VALUE,
-            ownerUserId)));
-    boolRsQuery.addMustQuery(
-        new QueryModel(QueryType.MATCH, Map.of(FIELD, "resourceServerRegURL.keyword", VALUE,
-            resourceServerUrl)));
-    QueryModel finalQuery = new QueryModel(QueryType.BOOL);
-    finalQuery.setShouldQueries(List.of(boolIdQuery, boolRsQuery));
-    QueryModel queryModel = new QueryModel();
-    queryModel.setQueries(finalQuery);
-    queryModel.setIncludeFields(List.of("type"));
-
-    Promise<JsonObject> promise = Promise.promise();
-
-    LOGGER.debug("query provider exists " + queryModel.toJson());
-    esService.search(docIndex, queryModel)
-        .onComplete(res -> {
-          if (res.failed()) {
-            LOGGER.debug("Fail: DB Error");
-            promise.fail(VALIDATION_FAILURE_MSG);
-            return;
-          }
-          List<ElasticsearchResponse> responseList = res.result();
-          DbResponseMessageBuilder responseMsg = new DbResponseMessageBuilder();
-          responseMsg.statusSuccess();
-          responseMsg.setTotalHits(responseList.size());
-          responseMsg.addResult();
-          responseList.stream()
-              .map(ElasticsearchResponse::getSource)
-              .peek(source -> {
-                source.remove(SUMMARY_KEY);
-                source.remove(WORD_VECTOR_KEY);
-              })
-              .forEach(responseMsg::addResult);
-          String returnType = getReturnTypeForValidation(responseMsg.getResponse());
-          LOGGER.debug(returnType);
-
-          LOGGER.debug("res result " + res.result());
-          if (!returnType.contains(ITEM_TYPE_RESOURCE_SERVER)) {
-            LOGGER.debug("RS does not exist");
-            promise.fail("Fail: Resource Server item doesn't exist");
-          } else if (method.equalsIgnoreCase(REQUEST_POST)
-              && returnType.contains(ITEM_TYPE_PROVIDER)) {
-            LOGGER.debug("Provider already exists");
-            promise.fail("Fail: Provider item for this resource server already exists");
-          } else {
-            promise.complete(request);
-          }
-        });
-    return promise.future();
-  }
-
-  private Future<JsonObject> validateResourceServer(JsonObject request, String method) {
-    //    validateId(request, handler, isUacInstance);
-    if (!isUacInstance && !request.containsKey(ID)) {
-      UUID uuid = UUID.randomUUID();
-      request.put(ID, uuid.toString());
-    }
-
-    request.put(ITEM_STATUS, ACTIVE).put(ITEM_CREATED_AT, getUtcDatetimeAsString());
-    String cos = request.getString(COS_ITEM);
-    String resourceServerUrl = request.getString(RESOURCE_SERVER_URL);
-    QueryModel boolIdQuery = new QueryModel(QueryType.BOOL);
-    boolIdQuery.addMustQuery(new QueryModel(QueryType.MATCH, Map.of(FIELD, ID_KEYWORD, VALUE,
-        cos)));
-    QueryModel boolRsQuery = new QueryModel(QueryType.BOOL);
-    boolRsQuery.addMustQuery(new QueryModel(QueryType.MATCH, Map.of(FIELD, "type.keyword", VALUE,
-        ITEM_TYPE_RESOURCE_SERVER)));
-    boolRsQuery.addMustQuery(new QueryModel(QueryType.MATCH, Map.of(FIELD, RESOURCE_SERVER_URL +
-            ".keyword", VALUE,
-        resourceServerUrl)));
-    QueryModel finalQuery = new QueryModel(QueryType.BOOL);
-    finalQuery.setShouldQueries(List.of(boolIdQuery, boolRsQuery));
-    QueryModel queryModel = new QueryModel();
-    queryModel.setQueries(finalQuery);
-    queryModel.setIncludeFields(List.of("type"));
-    LOGGER.debug(queryModel.toJson());
-
-    Promise<JsonObject> promise = Promise.promise();
-    esService.search(docIndex, queryModel)
-        .onComplete(res -> {
-          if (res.failed()) {
-            LOGGER.debug("Fail: DB Error");
-            promise.fail(VALIDATION_FAILURE_MSG);
-            return;
-          }
-          List<ElasticsearchResponse> responseList = res.result();
-          DbResponseMessageBuilder responseMsg = new DbResponseMessageBuilder();
-          responseMsg.statusSuccess();
-          responseMsg.setTotalHits(responseList.size());
-          responseMsg.addResult();
-          responseList.stream()
-              .map(ElasticsearchResponse::getSource)
-              .peek(source -> {
-                source.remove(SUMMARY_KEY);
-                source.remove(WORD_VECTOR_KEY);
-              })
-              .forEach(responseMsg::addResult);
-          String returnType = getReturnTypeForValidation(responseMsg.getResponse());
-          LOGGER.debug(returnType);
-
-          if (responseMsg.getResponse().getInteger(TOTAL_HITS) < 1 ||
-              !returnType.contains(ITEM_TYPE_COS)) {
-            LOGGER.debug("Cos does not exist");
-            promise.fail("Fail: Cos item doesn't exist");
-          } else if (method.equalsIgnoreCase(REQUEST_POST)
-              && returnType.contains(ITEM_TYPE_RESOURCE_SERVER)) {
-            LOGGER.debug("RS already exists");
-            promise.fail(
-                String.format(
-                    "Fail: Resource Server item with url %s already exists for this COS",
-                    resourceServerUrl));
-          } else {
-            promise.complete(request);
-          }
-        });
-    return promise.future();
-  }
-
-  private Future<JsonObject> validateResource(JsonObject request, String method) {
-    //    validateId(request, handler, isUacInstance);
-    if (!isUacInstance && !request.containsKey("id")) {
-      UUID uuid = UUID.randomUUID();
-      request.put("id", uuid.toString());
-    }
-
-    request.put(ITEM_STATUS, ACTIVE).put(ITEM_CREATED_AT, getUtcDatetimeAsString());
-    String provider = request.getString(PROVIDER);
-    String resourceGroup = request.getString(RESOURCE_GRP);
-    String resourceServer = request.getString(RESOURCE_SVR);
-
-    QueryModel mustQuery = new QueryModel(QueryType.BOOL);
-    mustQuery.addMustQuery(new QueryModel(QueryType.MATCH, Map.of(FIELD, "type.keyword", VALUE,
-        "iudx:Resource")));
-    mustQuery.addMustQuery(new QueryModel(QueryType.MATCH, Map.of(FIELD, "name.keyword", VALUE,
-        request.getString(NAME))));
-    QueryModel finalQuery = new QueryModel(QueryType.BOOL);
-    finalQuery.addShouldQuery(new QueryModel(QueryType.MATCH, Map.of(FIELD, ID_KEYWORD, VALUE,
-        resourceServer)));
-    finalQuery.addShouldQuery(new QueryModel(QueryType.MATCH, Map.of(FIELD, ID_KEYWORD, VALUE,
-        provider)));
-    finalQuery.addShouldQuery(new QueryModel(QueryType.MATCH, Map.of(FIELD, ID_KEYWORD, VALUE,
-        resourceGroup)));
-    finalQuery.addShouldQuery(mustQuery);
-    QueryModel queryModel = new QueryModel();
-    queryModel.setQueries(finalQuery);
-    queryModel.setIncludeFields(List.of("type"));
-    LOGGER.debug(queryModel.toJson());
-
-    Promise<JsonObject> promise = Promise.promise();
-    esService.search(docIndex, queryModel)
-        .onComplete(res -> {
-          if (res.failed()) {
-            LOGGER.debug("Fail: DB Error");
-            promise.fail(VALIDATION_FAILURE_MSG);
-            return;
-          }
-          List<ElasticsearchResponse> responseList = res.result();
-          DbResponseMessageBuilder responseMsg = new DbResponseMessageBuilder();
-          responseMsg.statusSuccess();
-          responseMsg.setTotalHits(responseList.size());
-          responseMsg.addResult();
-          responseList.stream()
-              .map(ElasticsearchResponse::getSource)
-              .peek(source -> {
-                source.remove(SUMMARY_KEY);
-                source.remove(WORD_VECTOR_KEY);
-              })
-              .forEach(responseMsg::addResult);
-          String returnType = getReturnTypeForValidation(responseMsg.getResponse());
-          LOGGER.debug(returnType);
-
-          if (responseMsg.getResponse().getInteger(TOTAL_HITS) < 3
-              && !returnType.contains(ITEM_TYPE_RESOURCE_SERVER)) {
-            LOGGER.debug("RS does not exist");
-            promise.fail("Fail: Resource Server item doesn't exist");
-          } else if (responseMsg.getResponse().getInteger(TOTAL_HITS) < 3
-              && !returnType.contains(ITEM_TYPE_PROVIDER)) {
-            LOGGER.debug("Provider does not exist");
-            promise.fail("Fail: Provider item doesn't exist");
-          } else if (responseMsg.getResponse().getInteger(TOTAL_HITS) < 3
-              && !returnType.contains(ITEM_TYPE_RESOURCE_GROUP)) {
-            LOGGER.debug("RG does not exist");
-            promise.fail("Fail: Resource Group item doesn't exist");
-          } else if (method.equalsIgnoreCase(REQUEST_POST)
-              && responseMsg.getResponse().getInteger(TOTAL_HITS) > 3) {
-            LOGGER.debug("RI already exists");
-            promise.fail("Fail: Resource item already exists");
-          } else {
-            promise.complete(request);
-          }
-        });
-    return promise.future();
-  }
-
-  private Future<JsonObject> validateCosItem(JsonObject request, String method) {
-    //    validateId(request, handler, isUacInstance);
-    if (!isUacInstance && !request.containsKey(ID)) {
-      UUID uuid = UUID.randomUUID();
-      request.put(ID, uuid.toString());
-    }
-    request.put(ITEM_STATUS, ACTIVE).put(ITEM_CREATED_AT, getUtcDatetimeAsString());
-
-    String owner = request.getString(OWNER);
-
-    QueryModel boolIdQuery = new QueryModel(QueryType.BOOL);
-    boolIdQuery.addMustQuery(new QueryModel(QueryType.MATCH, Map.of(FIELD, ID_KEYWORD, VALUE,
-        owner)));
-    QueryModel boolRsQuery = new QueryModel(QueryType.BOOL);
-    boolRsQuery.addMustQuery(new QueryModel(QueryType.MATCH, Map.of(FIELD, "type.keyword", VALUE,
-        ITEM_TYPE_COS)));
-    boolRsQuery.addMustQuery(new QueryModel(QueryType.MATCH, Map.of(FIELD, NAME +
-        ".keyword", VALUE, request.getString(NAME))));
-    QueryModel finalQuery = new QueryModel(QueryType.BOOL);
-    finalQuery.setShouldQueries(List.of(boolIdQuery, boolRsQuery));
-    QueryModel queryModel = new QueryModel();
-    queryModel.setQueries(finalQuery);
-    queryModel.setIncludeFields(List.of("type"));
-    LOGGER.debug(queryModel.toJson());
-
-    Promise<JsonObject> promise = Promise.promise();
-    esService.search(docIndex, queryModel)
-        .onComplete(res -> {
-          if (res.failed()) {
-            LOGGER.debug("Fail: DB Error");
-            promise.fail(VALIDATION_FAILURE_MSG);
-            return;
-          }
-          List<ElasticsearchResponse> responseList = res.result();
-          DbResponseMessageBuilder responseMsg = new DbResponseMessageBuilder();
-          responseMsg.statusSuccess();
-          responseMsg.setTotalHits(responseList.size());
-          responseMsg.addResult();
-          responseList.stream()
-              .map(ElasticsearchResponse::getSource)
-              .peek(source -> {
-                source.remove(SUMMARY_KEY);
-                source.remove(WORD_VECTOR_KEY);
-              })
-              .forEach(responseMsg::addResult);
-          String returnType = getReturnTypeForValidation(responseMsg.getResponse());
-          LOGGER.debug(returnType);
-          if (responseMsg.getResponse().getInteger(TOTAL_HITS) < 1 ||
-              !returnType.contains(ITEM_TYPE_OWNER)) {
-            LOGGER.debug("Owner does not exist");
-            promise.fail("Fail: Owner item doesn't exist");
-          } else if (method.equalsIgnoreCase(REQUEST_POST) && returnType.contains(ITEM_TYPE_COS)) {
-            LOGGER.debug("COS already exists");
-            promise.fail("Fail: COS item already exists");
-          } else {
-            promise.complete(request);
-          }
-        });
-    return promise.future();
-  }
-
-  private Future<JsonObject> validateOwnerItem(JsonObject request, String method) {
-    //    validateId(request, handler, isUacInstance);
-    if (!isUacInstance && !request.containsKey(ID)) {
-      UUID uuid = UUID.randomUUID();
-      request.put(ID, uuid.toString());
-    }
-    request.put(ITEM_STATUS, ACTIVE).put(ITEM_CREATED_AT, getUtcDatetimeAsString());
-    QueryModel query = new QueryModel(QueryType.BOOL);
-    query.addMustQuery(new QueryModel(QueryType.MATCH, Map.of(FIELD, "type", VALUE, "iudx:Owner")));
-    query.addMustQuery(new QueryModel(QueryType.MATCH,
-        Map.of(FIELD, "name.keyword", VALUE, request.getString(NAME))));
-
-    QueryModel queryModel = new QueryModel();
-    queryModel.setQueries(query);
-
-    Promise<JsonObject> promise = Promise.promise();
-    esService.search(docIndex, queryModel)
-        .onComplete(res -> {
-          if (res.failed()) {
-            LOGGER.debug("Fail: DB Error");
-            promise.fail(VALIDATION_FAILURE_MSG);
-            return;
-          }
-          if (method.equalsIgnoreCase(REQUEST_POST) && !res.result().isEmpty()) {
-            LOGGER.debug("Owner item already exists");
-            promise.fail("Fail: Owner item already exists");
-          } else {
-            promise.complete(request);
-          }
-        });
-    return promise.future();
-  }
-
-  private Future<JsonObject> validateSchema() {
-    Promise<JsonObject> promise = Promise.promise();
-    isValidSchema
-        .onSuccess(x -> promise.complete(new JsonObject().put(STATUS, SUCCESS)))
-        .onFailure(
-            x -> {
-              LOGGER.error("Fail: Invalid Schema");
-              LOGGER.error(x.getMessage());
-              promise.fail(String.valueOf(new JsonArray().add(x.getMessage())));
-            });
-    return promise.future();
-  }
-
   @Override
   public Future<JsonObject> validateRating(JsonObject request) {
     isValidSchema = ratingValidator.validate(request.toString());
@@ -677,5 +301,397 @@ public class ValidatorServiceImpl implements ValidatorService {
   public Future<JsonObject> validateMlayerDatasetId(JsonObject request) {
     isValidSchema = mlayerDatasetValidator.validate(request.toString());
     return validateSchema();
+  }
+
+  private Future<JsonObject> validateResourceGroup(JsonObject request, String method) {
+    //    validateId(request, isUacInstance);
+    if (!isUacInstance && !request.containsKey(ID)) {
+      UUID uuid = UUID.randomUUID();
+      request.put(ID, uuid.toString());
+    }
+
+    request.put(ITEM_STATUS, ACTIVE).put(ITEM_CREATED_AT, getUtcDatetimeAsString());
+    String provider = request.getString(PROVIDER);
+
+    QueryModel boolIdQuery = new QueryModel(QueryType.BOOL);
+    boolIdQuery.addMustQuery(
+        new QueryModel(QueryType.MATCH, Map.of(FIELD, ID_KEYWORD, VALUE, provider)));
+    QueryModel boolRsQuery = new QueryModel(QueryType.BOOL);
+    boolRsQuery.addMustQuery(
+        new QueryModel(
+            QueryType.MATCH, Map.of(FIELD, "type.keyword", VALUE, ITEM_TYPE_RESOURCE_GROUP)));
+    boolRsQuery.addMustQuery(
+        new QueryModel(
+            QueryType.MATCH, Map.of(FIELD, NAME + ".keyword", VALUE, request.getString(NAME))));
+    QueryModel finalQuery = new QueryModel(QueryType.BOOL);
+    finalQuery.setShouldQueries(List.of(boolIdQuery, boolRsQuery));
+    QueryModel queryModel = new QueryModel();
+    queryModel.setQueries(finalQuery);
+    queryModel.setIncludeFields(List.of("type"));
+    LOGGER.debug(queryModel.toJson());
+
+    Promise<JsonObject> promise = Promise.promise();
+    esService
+        .search(docIndex, queryModel)
+        .onComplete(
+            res -> {
+              if (res.failed()) {
+                LOGGER.debug("Fail: DB Error");
+                promise.fail(VALIDATION_FAILURE_MSG);
+              }
+              List<ElasticsearchResponse> responseList = res.result();
+              DbResponseMessageBuilder responseMsg = new DbResponseMessageBuilder();
+              responseMsg.statusSuccess();
+              responseMsg.setTotalHits(responseList.size());
+              responseMsg.addResult();
+              responseList.stream()
+                  .map(ElasticsearchResponse::getSource)
+                  .peek(
+                      source -> {
+                        source.remove(SUMMARY_KEY);
+                        source.remove(WORD_VECTOR_KEY);
+                      })
+                  .forEach(responseMsg::addResult);
+              String returnType = getReturnTypeForValidation(responseMsg.getResponse());
+              LOGGER.debug(returnType);
+              if (responseMsg.getResponse().getInteger(TOTAL_HITS) < 1
+                  || !returnType.contains(ITEM_TYPE_PROVIDER)) {
+                LOGGER.debug("Provider does not exist");
+                promise.fail("Fail: Provider item doesn't exist");
+              } else if (method.equalsIgnoreCase(REQUEST_POST)
+                  && returnType.contains(ITEM_TYPE_RESOURCE_GROUP)) {
+                LOGGER.debug("RG already exists");
+                promise.fail("Fail: Resource Group item already exists");
+              } else {
+                promise.complete(request);
+              }
+            });
+    return promise.future();
+  }
+
+  private Future<JsonObject> validateProvider(JsonObject request, String method) {
+    // Validate if Provider
+    //    validateId(request, handler, isUacInstance);
+    if (!isUacInstance && !request.containsKey(ID)) {
+      UUID uuid = UUID.randomUUID();
+      request.put(ID, uuid.toString());
+    }
+
+    request.put(ITEM_STATUS, ACTIVE).put(ITEM_CREATED_AT, getUtcDatetimeAsString());
+    String resourceServer = request.getString(RESOURCE_SVR);
+    String ownerUserId = request.getString(PROVIDER_USER_ID);
+    String resourceServerUrl = request.getString(RESOURCE_SERVER_URL);
+
+    QueryModel boolIdQuery = new QueryModel(QueryType.BOOL);
+    boolIdQuery.addMustQuery(
+        new QueryModel(QueryType.MATCH, Map.of(FIELD, ID_KEYWORD, VALUE, resourceServer)));
+    QueryModel boolRsQuery = new QueryModel(QueryType.BOOL);
+    boolRsQuery.addMustQuery(
+        new QueryModel(QueryType.MATCH, Map.of(FIELD, "ownerUserId.keyword", VALUE, ownerUserId)));
+    boolRsQuery.addMustQuery(
+        new QueryModel(
+            QueryType.MATCH,
+            Map.of(FIELD, "resourceServerRegURL.keyword", VALUE, resourceServerUrl)));
+    QueryModel finalQuery = new QueryModel(QueryType.BOOL);
+    finalQuery.setShouldQueries(List.of(boolIdQuery, boolRsQuery));
+    QueryModel queryModel = new QueryModel();
+    queryModel.setQueries(finalQuery);
+    queryModel.setIncludeFields(List.of("type"));
+
+    Promise<JsonObject> promise = Promise.promise();
+
+    LOGGER.debug("query provider exists " + queryModel.toJson());
+    esService
+        .search(docIndex, queryModel)
+        .onComplete(
+            res -> {
+              if (res.failed()) {
+                LOGGER.debug("Fail: DB Error");
+                promise.fail(VALIDATION_FAILURE_MSG);
+                return;
+              }
+              List<ElasticsearchResponse> responseList = res.result();
+              DbResponseMessageBuilder responseMsg = new DbResponseMessageBuilder();
+              responseMsg.statusSuccess();
+              responseMsg.setTotalHits(responseList.size());
+              responseMsg.addResult();
+              responseList.stream()
+                  .map(ElasticsearchResponse::getSource)
+                  .peek(
+                      source -> {
+                        source.remove(SUMMARY_KEY);
+                        source.remove(WORD_VECTOR_KEY);
+                      })
+                  .forEach(responseMsg::addResult);
+              String returnType = getReturnTypeForValidation(responseMsg.getResponse());
+              LOGGER.debug(returnType);
+
+              LOGGER.debug("res result " + res.result());
+              if (!returnType.contains(ITEM_TYPE_RESOURCE_SERVER)) {
+                LOGGER.debug("RS does not exist");
+                promise.fail("Fail: Resource Server item doesn't exist");
+              } else if (method.equalsIgnoreCase(REQUEST_POST)
+                  && returnType.contains(ITEM_TYPE_PROVIDER)) {
+                LOGGER.debug("Provider already exists");
+                promise.fail("Fail: Provider item for this resource server already exists");
+              } else {
+                promise.complete(request);
+              }
+            });
+    return promise.future();
+  }
+
+  private Future<JsonObject> validateResourceServer(JsonObject request, String method) {
+    //    validateId(request, handler, isUacInstance);
+    if (!isUacInstance && !request.containsKey(ID)) {
+      UUID uuid = UUID.randomUUID();
+      request.put(ID, uuid.toString());
+    }
+
+    request.put(ITEM_STATUS, ACTIVE).put(ITEM_CREATED_AT, getUtcDatetimeAsString());
+    String cos = request.getString(COS_ITEM);
+    String resourceServerUrl = request.getString(RESOURCE_SERVER_URL);
+    QueryModel boolIdQuery = new QueryModel(QueryType.BOOL);
+    boolIdQuery.addMustQuery(
+        new QueryModel(QueryType.MATCH, Map.of(FIELD, ID_KEYWORD, VALUE, cos)));
+    QueryModel boolRsQuery = new QueryModel(QueryType.BOOL);
+    boolRsQuery.addMustQuery(
+        new QueryModel(
+            QueryType.MATCH, Map.of(FIELD, "type.keyword", VALUE, ITEM_TYPE_RESOURCE_SERVER)));
+    boolRsQuery.addMustQuery(
+        new QueryModel(
+            QueryType.MATCH,
+            Map.of(FIELD, RESOURCE_SERVER_URL + ".keyword", VALUE, resourceServerUrl)));
+    QueryModel finalQuery = new QueryModel(QueryType.BOOL);
+    finalQuery.setShouldQueries(List.of(boolIdQuery, boolRsQuery));
+    QueryModel queryModel = new QueryModel();
+    queryModel.setQueries(finalQuery);
+    queryModel.setIncludeFields(List.of("type"));
+    LOGGER.debug(queryModel.toJson());
+
+    Promise<JsonObject> promise = Promise.promise();
+    esService
+        .search(docIndex, queryModel)
+        .onComplete(
+            res -> {
+              if (res.failed()) {
+                LOGGER.debug("Fail: DB Error");
+                promise.fail(VALIDATION_FAILURE_MSG);
+                return;
+              }
+              List<ElasticsearchResponse> responseList = res.result();
+              DbResponseMessageBuilder responseMsg = new DbResponseMessageBuilder();
+              responseMsg.statusSuccess();
+              responseMsg.setTotalHits(responseList.size());
+              responseMsg.addResult();
+              responseList.stream()
+                  .map(ElasticsearchResponse::getSource)
+                  .peek(
+                      source -> {
+                        source.remove(SUMMARY_KEY);
+                        source.remove(WORD_VECTOR_KEY);
+                      })
+                  .forEach(responseMsg::addResult);
+              String returnType = getReturnTypeForValidation(responseMsg.getResponse());
+              LOGGER.debug(returnType);
+
+              if (responseMsg.getResponse().getInteger(TOTAL_HITS) < 1
+                  || !returnType.contains(ITEM_TYPE_COS)) {
+                LOGGER.debug("Cos does not exist");
+                promise.fail("Fail: Cos item doesn't exist");
+              } else if (method.equalsIgnoreCase(REQUEST_POST)
+                  && returnType.contains(ITEM_TYPE_RESOURCE_SERVER)) {
+                LOGGER.debug("RS already exists");
+                promise.fail(
+                    String.format(
+                        "Fail: Resource Server item with url %s already exists for this COS",
+                        resourceServerUrl));
+              } else {
+                promise.complete(request);
+              }
+            });
+    return promise.future();
+  }
+
+  private Future<JsonObject> validateResource(JsonObject request, String method) {
+    //    validateId(request, handler, isUacInstance);
+    if (!isUacInstance && !request.containsKey("id")) {
+      UUID uuid = UUID.randomUUID();
+      request.put("id", uuid.toString());
+    }
+
+    request.put(ITEM_STATUS, ACTIVE).put(ITEM_CREATED_AT, getUtcDatetimeAsString());
+
+    QueryModel mustQuery = new QueryModel(QueryType.BOOL);
+    mustQuery.addMustQuery(
+        new QueryModel(QueryType.MATCH, Map.of(FIELD, "type.keyword", VALUE, "iudx:Resource")));
+    mustQuery.addMustQuery(
+        new QueryModel(
+            QueryType.MATCH, Map.of(FIELD, "name.keyword", VALUE, request.getString(NAME))));
+    QueryModel finalQuery = new QueryModel(QueryType.BOOL);
+    String resourceServer = request.getString(RESOURCE_SVR);
+    finalQuery.addShouldQuery(
+        new QueryModel(QueryType.MATCH, Map.of(FIELD, ID_KEYWORD, VALUE, resourceServer)));
+    String provider = request.getString(PROVIDER);
+    finalQuery.addShouldQuery(
+        new QueryModel(QueryType.MATCH, Map.of(FIELD, ID_KEYWORD, VALUE, provider)));
+    String resourceGroup = request.getString(RESOURCE_GRP);
+    finalQuery.addShouldQuery(
+        new QueryModel(QueryType.MATCH, Map.of(FIELD, ID_KEYWORD, VALUE, resourceGroup)));
+    finalQuery.addShouldQuery(mustQuery);
+    QueryModel queryModel = new QueryModel();
+    queryModel.setQueries(finalQuery);
+    queryModel.setIncludeFields(List.of("type"));
+    LOGGER.debug(queryModel.toJson());
+
+    Promise<JsonObject> promise = Promise.promise();
+    esService
+        .search(docIndex, queryModel)
+        .onComplete(
+            res -> {
+              if (res.failed()) {
+                LOGGER.debug("Fail: DB Error");
+                promise.fail(VALIDATION_FAILURE_MSG);
+                return;
+              }
+              List<ElasticsearchResponse> responseList = res.result();
+              DbResponseMessageBuilder responseMsg = new DbResponseMessageBuilder();
+              responseMsg.statusSuccess();
+              responseMsg.setTotalHits(responseList.size());
+              responseMsg.addResult();
+              responseList.stream()
+                  .map(ElasticsearchResponse::getSource)
+                  .peek(
+                      source -> {
+                        source.remove(SUMMARY_KEY);
+                        source.remove(WORD_VECTOR_KEY);
+                      })
+                  .forEach(responseMsg::addResult);
+              String returnType = getReturnTypeForValidation(responseMsg.getResponse());
+              LOGGER.debug(returnType);
+
+              if (responseMsg.getResponse().getInteger(TOTAL_HITS) < 3
+                  && !returnType.contains(ITEM_TYPE_RESOURCE_SERVER)) {
+                LOGGER.debug("RS does not exist");
+                promise.fail("Fail: Resource Server item doesn't exist");
+              } else if (responseMsg.getResponse().getInteger(TOTAL_HITS) < 3
+                  && !returnType.contains(ITEM_TYPE_PROVIDER)) {
+                LOGGER.debug("Provider does not exist");
+                promise.fail("Fail: Provider item doesn't exist");
+              } else if (responseMsg.getResponse().getInteger(TOTAL_HITS) < 3
+                  && !returnType.contains(ITEM_TYPE_RESOURCE_GROUP)) {
+                LOGGER.debug("RG does not exist");
+                promise.fail("Fail: Resource Group item doesn't exist");
+              } else if (method.equalsIgnoreCase(REQUEST_POST)
+                  && responseMsg.getResponse().getInteger(TOTAL_HITS) > 3) {
+                LOGGER.debug("RI already exists");
+                promise.fail("Fail: Resource item already exists");
+              } else {
+                promise.complete(request);
+              }
+            });
+    return promise.future();
+  }
+
+  private Future<JsonObject> validateCosItem(JsonObject request, String method) {
+    //    validateId(request, handler, isUacInstance);
+    if (!isUacInstance && !request.containsKey(ID)) {
+      UUID uuid = UUID.randomUUID();
+      request.put(ID, uuid.toString());
+    }
+    request.put(ITEM_STATUS, ACTIVE).put(ITEM_CREATED_AT, getUtcDatetimeAsString());
+
+    String owner = request.getString(OWNER);
+
+    QueryModel boolIdQuery = new QueryModel(QueryType.BOOL);
+    boolIdQuery.addMustQuery(
+        new QueryModel(QueryType.MATCH, Map.of(FIELD, ID_KEYWORD, VALUE, owner)));
+    QueryModel boolRsQuery = new QueryModel(QueryType.BOOL);
+    boolRsQuery.addMustQuery(
+        new QueryModel(QueryType.MATCH, Map.of(FIELD, "type.keyword", VALUE, ITEM_TYPE_COS)));
+    boolRsQuery.addMustQuery(
+        new QueryModel(
+            QueryType.MATCH, Map.of(FIELD, NAME + ".keyword", VALUE, request.getString(NAME))));
+    QueryModel finalQuery = new QueryModel(QueryType.BOOL);
+    finalQuery.setShouldQueries(List.of(boolIdQuery, boolRsQuery));
+    QueryModel queryModel = new QueryModel();
+    queryModel.setQueries(finalQuery);
+    queryModel.setIncludeFields(List.of("type"));
+    LOGGER.debug(queryModel.toJson());
+
+    Promise<JsonObject> promise = Promise.promise();
+    esService
+        .search(docIndex, queryModel)
+        .onComplete(
+            res -> {
+              if (res.failed()) {
+                LOGGER.debug("Fail: DB Error");
+                promise.fail(VALIDATION_FAILURE_MSG);
+                return;
+              }
+              List<ElasticsearchResponse> responseList = res.result();
+              DbResponseMessageBuilder responseMsg = new DbResponseMessageBuilder();
+              responseMsg.statusSuccess();
+              responseMsg.setTotalHits(responseList.size());
+              responseMsg.addResult();
+              responseList.stream()
+                  .map(ElasticsearchResponse::getSource)
+                  .peek(
+                      source -> {
+                        source.remove(SUMMARY_KEY);
+                        source.remove(WORD_VECTOR_KEY);
+                      })
+                  .forEach(responseMsg::addResult);
+              String returnType = getReturnTypeForValidation(responseMsg.getResponse());
+              LOGGER.debug(returnType);
+              if (responseMsg.getResponse().getInteger(TOTAL_HITS) < 1
+                  || !returnType.contains(ITEM_TYPE_OWNER)) {
+                LOGGER.debug("Owner does not exist");
+                promise.fail("Fail: Owner item doesn't exist");
+              } else if (method.equalsIgnoreCase(REQUEST_POST)
+                  && returnType.contains(ITEM_TYPE_COS)) {
+                LOGGER.debug("COS already exists");
+                promise.fail("Fail: COS item already exists");
+              } else {
+                promise.complete(request);
+              }
+            });
+    return promise.future();
+  }
+
+  private Future<JsonObject> validateOwnerItem(JsonObject request, String method) {
+    //    validateId(request, handler, isUacInstance);
+    if (!isUacInstance && !request.containsKey(ID)) {
+      UUID uuid = UUID.randomUUID();
+      request.put(ID, uuid.toString());
+    }
+    request.put(ITEM_STATUS, ACTIVE).put(ITEM_CREATED_AT, getUtcDatetimeAsString());
+    QueryModel query = new QueryModel(QueryType.BOOL);
+    query.addMustQuery(new QueryModel(QueryType.MATCH, Map.of(FIELD, "type", VALUE, "iudx:Owner")));
+    query.addMustQuery(
+        new QueryModel(
+            QueryType.MATCH, Map.of(FIELD, "name.keyword", VALUE, request.getString(NAME))));
+
+    QueryModel queryModel = new QueryModel();
+    queryModel.setQueries(query);
+
+    Promise<JsonObject> promise = Promise.promise();
+    esService
+        .search(docIndex, queryModel)
+        .onComplete(
+            res -> {
+              if (res.failed()) {
+                LOGGER.debug("Fail: DB Error");
+                promise.fail(VALIDATION_FAILURE_MSG);
+                return;
+              }
+              if (method.equalsIgnoreCase(REQUEST_POST) && !res.result().isEmpty()) {
+                LOGGER.debug("Owner item already exists");
+                promise.fail("Fail: Owner item already exists");
+              } else {
+                promise.complete(request);
+              }
+            });
+    return promise.future();
   }
 }

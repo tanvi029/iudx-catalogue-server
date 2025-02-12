@@ -36,8 +36,8 @@ import org.apache.logging.log4j.Logger;
  *
  * <h1>GeocodingController Service Implementation</h1>
  *
- * <p>The GeocodingController Service implementation in the IUDX Catalogue Server implements the definitions
- * of the {@link GeocodingService}.
+ * <p>The GeocodingController Service implementation in the IUDX Catalogue Server implements the
+ * definitions of the {@link GeocodingService}.
  *
  * @version 1.0
  * @since 2020-11-05
@@ -50,16 +50,16 @@ public class GeocodingServiceImpl implements GeocodingService {
   private final int peliasPort;
 
   /**
-   * Constructs a new instance of GeocodingServiceImpl with the provided WebClient and
-   * Pelias URL and port.
-   * The geocoding service is used to convert textual location queries into geographic coordinates.
+   * Constructs a new instance of GeocodingServiceImpl with the provided WebClient and Pelias URL
+   * and port. The geocoding service is used to convert textual location queries into geographic
+   * coordinates.
    *
-   * @param webClient  the WebClient used to perform HTTP requests
-   * @param peliasUrl  the URL of the Pelias geocoding service
+   * @param webClient the WebClient used to perform HTTP requests
+   * @param peliasUrl the URL of the Pelias geocoding service
    * @param peliasPort the port number of the Pelias geocoding service
    */
   public GeocodingServiceImpl(WebClient webClient, String peliasUrl, int peliasPort) {
-    this.webClient = webClient;
+    GeocodingServiceImpl.webClient = webClient;
     this.peliasUrl = peliasUrl;
     this.peliasPort = peliasPort;
   }
@@ -115,10 +115,11 @@ public class GeocodingServiceImpl implements GeocodingService {
                         .toString());
               }
             })
-        .onFailure(err -> {
-          LOGGER.error("Failed to find coordinates");
-          promise.fail(err);
-        });
+        .onFailure(
+            err -> {
+              LOGGER.error("Failed to find coordinates");
+              promise.fail(err);
+            });
 
     return promise.future();
   }
@@ -126,8 +127,7 @@ public class GeocodingServiceImpl implements GeocodingService {
   private JsonObject generateGeocodingJson(JsonObject property) {
     JsonObject resultEntry = new JsonObject();
     if (property.containsKey(NAME)) {
-      resultEntry.put(NAME,
-          property.getString(NAME));
+      resultEntry.put(NAME, property.getString(NAME));
     }
     if (property.containsKey(COUNTRY)) {
       resultEntry.put(COUNTRY, property.getString(COUNTRY));
@@ -149,16 +149,18 @@ public class GeocodingServiceImpl implements GeocodingService {
 
   private Future<JsonObject> geocoderHelper(String location) {
     Promise<JsonObject> promise = Promise.promise();
-    geocoder(location).onComplete(ar -> {
-          if (ar.succeeded()) {
-            LOGGER.debug(ar.result());
-            JsonObject arResToJson = new JsonObject(ar.result());
-            promise.complete(arResToJson);
-          } else {
-            LOGGER.error("Request failed!");
-            promise.complete(new JsonObject());
-          }
-        });
+    geocoder(location)
+        .onComplete(
+            ar -> {
+              if (ar.succeeded()) {
+                LOGGER.debug(ar.result());
+                JsonObject arResToJson = new JsonObject(ar.result());
+                promise.complete(arResToJson);
+              } else {
+                LOGGER.error("Request failed!");
+                promise.complete(new JsonObject());
+              }
+            });
     return promise.future();
   }
 
@@ -172,24 +174,27 @@ public class GeocodingServiceImpl implements GeocodingService {
         .addQueryParam("point.lat", lat)
         .putHeader("Accept", "application/json")
         .send()
-        .onSuccess(response -> {
-                LOGGER.debug("Request succeeded!");
-                promise.complete(response.bodyAsJsonObject());
-              })
-        .onFailure(err -> {
-                LOGGER.error("Failed to find location");
-                promise.fail(err);
+        .onSuccess(
+            response -> {
+              LOGGER.debug("Request succeeded!");
+              promise.complete(response.bodyAsJsonObject());
+            })
+        .onFailure(
+            err -> {
+              LOGGER.error("Failed to find location");
+              promise.fail(err);
             });
     return promise.future();
   }
 
   private Future<JsonObject> reverseGeocoderHelper(String lat, String lon) {
     return reverseGeocoder(lat, lon)
-        .map(ar -> {
-          JsonArray res = ar.getJsonArray(FEATURES);
-          JsonObject properties = res.getJsonObject(0).getJsonObject(PROPERTIES);
-          return generateGeocodingJson(properties);
-        })
+        .map(
+            ar -> {
+              JsonArray res = ar.getJsonArray(FEATURES);
+              JsonObject properties = res.getJsonObject(0).getJsonObject(PROPERTIES);
+              return generateGeocodingJson(properties);
+            })
         .otherwise(new JsonObject());
   }
 
@@ -210,8 +215,7 @@ public class GeocodingServiceImpl implements GeocodingService {
 
       /* Reverse GeocodingController information */
       if (location.containsKey(GEOMETRY)
-          && location.getJsonObject(GEOMETRY).getString(TYPE)
-          .equalsIgnoreCase("Point")) {
+          && location.getJsonObject(GEOMETRY).getString(TYPE).equalsIgnoreCase("Point")) {
         JsonObject geometry = location.getJsonObject(GEOMETRY);
         JsonArray pos = geometry.getJsonArray(COORDINATES);
         String lon = pos.getString(0);

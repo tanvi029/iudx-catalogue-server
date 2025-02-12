@@ -14,10 +14,10 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.StaticHandler;
-import iudx.catalogue.server.apiserver.Item.service.ItemService;
-import iudx.catalogue.server.apiserver.Item.service.ItemServiceImpl;
 import iudx.catalogue.server.apiserver.crud.CrudController;
 import iudx.catalogue.server.apiserver.crud.CrudService;
+import iudx.catalogue.server.apiserver.item.service.ItemService;
+import iudx.catalogue.server.apiserver.item.service.ItemServiceImpl;
 import iudx.catalogue.server.apiserver.stack.controller.StacController;
 import iudx.catalogue.server.auditing.handler.AuditHandler;
 import iudx.catalogue.server.auditing.service.AuditingService;
@@ -116,34 +116,15 @@ public class ApiServerVerticle extends AbstractVerticle {
     serverOptions.setCompressionSupported(true).setCompressionLevel(5);
     // Instantiate this server
     server = vertx.createHttpServer(serverOptions);
-
-    boolean isUac = config().getBoolean(UAC_DEPLOYMENT);
     // API Callback managers
 
     // Todo - Set service proxies based on availability?
-    ElasticsearchService elasticsearchService = ElasticsearchService.createProxy(vertx, ELASTIC_SERVICE_ADDRESS);
-
-    RatingService ratingService = RatingService.createProxy(vertx, RATING_SERVICE_ADDRESS);
-
-    MlayerService mlayerService = MlayerService.createProxy(vertx, MLAYER_SERVICE_ADDRESSS);
-
-    AuthenticationService authService = AuthenticationService.createProxy(vertx, AUTH_SERVICE_ADDRESS);
-
-    authenticationHandler = new AuthenticationHandler(authService);
-    authorizationHandler = new AuthorizationHandler();
-
-    ValidatorService validationService = ValidatorService.createProxy(vertx, VALIDATION_SERVICE_ADDRESS);
-
     GeocodingService geoService = GeocodingService.createProxy(vertx, GEOCODING_SERVICE_ADDRESS);
     geocodingController = new GeocodingController(geoService, router);
 
     NLPSearchService nlpsearchService = NLPSearchService.createProxy(vertx, NLP_SERVICE_ADDRESS);
-
-    AuditingService auditingService = AuditingService.createProxy(vertx, AUDITING_SERVICE_ADDRESS);
-    AuditHandler auditHandler = new AuditHandler(auditingService);
-
-    FailureHandler failureHandler = new FailureHandler();
-
+    ElasticsearchService elasticsearchService =
+        ElasticsearchService.createProxy(vertx, ELASTIC_SERVICE_ADDRESS);
     ItemService itemService;
     optionalModules = config().getJsonArray(OPTIONAL_MODULES);
     if (optionalModules.contains(NLPSEARCH_PACKAGE_NAME)
@@ -153,7 +134,22 @@ public class ApiServerVerticle extends AbstractVerticle {
     } else {
       itemService = new ItemServiceImpl(elasticsearchService, config());
     }
+
+    AuditingService auditingService = AuditingService.createProxy(vertx, AUDITING_SERVICE_ADDRESS);
+    AuditHandler auditHandler = new AuditHandler(auditingService);
+
+    FailureHandler failureHandler = new FailureHandler();
+
     CrudService crudService = new CrudService(itemService);
+    AuthenticationService authService =
+        AuthenticationService.createProxy(vertx, AUTH_SERVICE_ADDRESS);
+
+    authenticationHandler = new AuthenticationHandler(authService);
+    authorizationHandler = new AuthorizationHandler();
+
+    ValidatorService validationService =
+        ValidatorService.createProxy(vertx, VALIDATION_SERVICE_ADDRESS);
+    boolean isUac = config().getBoolean(UAC_DEPLOYMENT);
     crudController =
         new CrudController(
             router,
@@ -165,6 +161,8 @@ public class ApiServerVerticle extends AbstractVerticle {
             authorizationHandler,
             auditHandler,
             failureHandler);
+
+    RatingService ratingService = RatingService.createProxy(vertx, RATING_SERVICE_ADDRESS);
     ratingController =
         new RatingController(
             router,
@@ -185,6 +183,7 @@ public class ApiServerVerticle extends AbstractVerticle {
             failureHandler,
             dxApiBasePath,
             docIndex);
+    MlayerService mlayerService = MlayerService.createProxy(vertx, MLAYER_SERVICE_ADDRESSS);
     mlayerController =
         new MlayerController(
             config().getString(HOST),

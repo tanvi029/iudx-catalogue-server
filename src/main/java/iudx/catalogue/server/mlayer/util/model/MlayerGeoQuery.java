@@ -41,7 +41,6 @@ public class MlayerGeoQuery {
   }
 
   public Future<JsonObject> getMlayerGeoQuery(JsonObject request) {
-    Promise<JsonObject> promise = Promise.promise();
     String instance = request.getString(INSTANCE);
     JsonArray id = request.getJsonArray(ID);
     QueryModel query = new QueryModel(QueryType.BOOL);
@@ -58,10 +57,10 @@ public class MlayerGeoQuery {
     queryModel.setQueries(query);
     queryModel.setMinimumShouldMatch("1");
     queryModel.setIncludeFields(List.of("id", "location", "instance", "label"));
+    Promise<JsonObject> promise = Promise.promise();
     esService.search(docIndex, queryModel)
         .onComplete(resultHandler -> {
           if (resultHandler.succeeded()) {
-
             List<ElasticsearchResponse> response = resultHandler.result();
             DbResponseMessageBuilder responseMsg = new DbResponseMessageBuilder();
             responseMsg.statusSuccess().setTotalHits(response.size());

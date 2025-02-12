@@ -84,9 +84,6 @@ public class RelationshipServiceImpl implements RelationshipService {
 
   @Override
   public Future<JsonObject> listRelationship(JsonObject request) {
-    Promise<JsonObject> promise = Promise.promise();
-    QueryModel queryModel = new QueryModel();
-
     QueryModel termsQuery = new QueryModel(QueryType.TERMS);
     Map<String, Object> termsParameters = new HashMap<>();
     termsParameters.put(FIELD, ID_KEYWORD);
@@ -97,9 +94,11 @@ public class RelationshipServiceImpl implements RelationshipService {
     typeQuery.setFilterQueries(List.of(termsQuery));
     List<String> sourceFields =
         List.of("cos", "resourceServer", "type", "provider", "resourceGroup", "id");
+    QueryModel queryModel = new QueryModel();
     queryModel.setIncludeFields(sourceFields);
     queryModel.setQueries(typeQuery);
 
+    Promise<JsonObject> promise = Promise.promise();
     esService.search(docIndex, queryModel).onComplete(queryHandler -> {
       if (queryHandler.succeeded()) {
         if (queryHandler.result().isEmpty()) {
@@ -229,7 +228,7 @@ public class RelationshipServiceImpl implements RelationshipService {
     typeQueryModel4RsServer.addFilterQuery(new QueryModel(QueryType.TERMS,
         Map.of(FIELD, ID_KEYWORD, VALUE, List.of(relType.getString(PROVIDER)))));
     typeQueryModel4RsServer.setIncludeFields(List.of("cos", "resourceServer", "type", "provider",
-        "resourceGroup","id"));
+        "resourceGroup", "id"));
 
     queryModel.setQueries(typeQueryModel4RsServer);
     LOGGER.debug("INFO: typeQueryModel4RsServer build");
@@ -384,8 +383,8 @@ public class RelationshipServiceImpl implements RelationshipService {
                               promise.complete(responseMessage.getResponse());
                             } else if (relSearchRes.failed()) {
                               LOGGER.error(
-                                  "Fail: DB request has failed;" +
-                                      relSearchRes.cause().getMessage());
+                                  "Fail: DB request has failed;"
+                                      + relSearchRes.cause().getMessage());
                               promise.fail(internalErrorResp());
                             }
                           });

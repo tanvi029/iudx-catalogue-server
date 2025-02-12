@@ -79,11 +79,8 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
   @Override
   public Future<JwtData> tokenIntrospect(
       JwtData decodedJwt, JwtAuthenticationInfo authenticationInfo) {
-    Promise<JwtData> promise = Promise.promise();
 
     String endPoint = authenticationInfo.getApiEndpoint();
-    String provider = Objects.requireNonNullElse(authenticationInfo.getProviderUserId(), "");
-    String itemType = Objects.requireNonNullElse(authenticationInfo.getItemType(), "");
     // TODO: remove rsUrl check
     String resourceServerRegUrl =
         Objects.requireNonNullElse(authenticationInfo.getResourceServerUrl(), "");
@@ -95,12 +92,15 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     result.jwtData = decodedJwt;
 
     // skip provider id check for non-provider operations
+    String provider = Objects.requireNonNullElse(authenticationInfo.getProviderUserId(), "");
+    String itemType = Objects.requireNonNullElse(authenticationInfo.getItemType(), "");
     boolean skipProviderIdCheck = provider.equalsIgnoreCase("");
     boolean skipAdminCheck =
         itemType.equalsIgnoreCase("")
             || itemType.equalsIgnoreCase(ITEM_TYPE_RESOURCE_GROUP)
             || itemType.equalsIgnoreCase(ITEM_TYPE_RESOURCE);
 
+    Promise<JwtData> promise = Promise.promise();
     // Introspection logic with conditional audience validation
     // audience for ratings is different from other cos endpoints
     isValidAudienceValue(result.jwtData, determineAudienceType(endPoint, itemType),
@@ -147,13 +147,13 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
   }
 
   public Future<Boolean> isValidAudienceValue(JwtData jwtData, String itemType, String serverUrl) {
-    Promise<Boolean> promise = Promise.promise();
-    LOGGER.debug("itemType: " + itemType);
 
+    LOGGER.debug("itemType: " + itemType);
     LOGGER.debug("Audience in jwt is: " + jwtData.getAud());
     LOGGER.debug(serverUrl);
     LOGGER.debug(audience);
     boolean isValidAudience;
+
     switch (itemType) {
       case ITEM_TYPE_PROVIDER:
       case ITEM_TYPE_RESOURCE_GROUP:
@@ -168,7 +168,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
         isValidAudience = audience != null && audience.equalsIgnoreCase(jwtData.getAud());
         break;
     }
-
+    Promise<Boolean> promise = Promise.promise();
     if (isValidAudience) {
       promise.complete(true);
     } else {
@@ -179,8 +179,6 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
   }
 
   public Future<Boolean> isValidProvider(JwtData jwtData, String provider) {
-    Promise<Boolean> promise = Promise.promise();
-
     String jwtId = "";
     if (jwtData.getRole().equalsIgnoreCase(PROVIDER)) {
 
@@ -189,9 +187,10 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
         && jwtData.getDrl().equalsIgnoreCase(PROVIDER)) {
       jwtId = jwtData.getDid();
     }
-
     LOGGER.debug("provider: " + provider);
     LOGGER.debug("jwtid: " + jwtId);
+
+    Promise<Boolean> promise = Promise.promise();
     if (provider.equalsIgnoreCase(jwtId)) {
       promise.complete(true);
     } else {

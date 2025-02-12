@@ -58,10 +58,7 @@ public final class ListController {
   /* list the item from database using itemId */
   private void setupRoutes() {
     /* list the item from database using itemId */
-    router
-        .get(ROUTE_LIST_ITEMS)
-        .produces(MIME_APPLICATION_JSON)
-        .handler(this::listItemsHandler);
+    router.get(ROUTE_LIST_ITEMS).produces(MIME_APPLICATION_JSON).handler(this::listItemsHandler);
   }
 
   // Method to return the router for mounting
@@ -141,18 +138,20 @@ public final class ListController {
 
         if (type.equalsIgnoreCase(ITEM_TYPE_OWNER) || type.equalsIgnoreCase(ITEM_TYPE_COS)) {
           listOwnerOrCos(requestBody)
-              .onComplete(dbHandler -> {
-                if (dbHandler.succeeded()) {
-                  handleResponseFromDatabase(response, itemType, dbHandler);
-                }
-              });
+              .onComplete(
+                  dbHandler -> {
+                    if (dbHandler.succeeded()) {
+                      handleResponseFromDatabase(response, itemType, dbHandler);
+                    }
+                  });
         } else {
 
           /* Request database service with requestBody for listing items */
           listItems(requestBody)
-              .onComplete(dbhandler -> {
-                handleResponseFromDatabase(response, itemType, dbhandler);
-              });
+              .onComplete(
+                  dbhandler -> {
+                    handleResponseFromDatabase(response, itemType, dbhandler);
+                  });
         }
       } else {
         LOGGER.error("Fail: Search/Count; Invalid request query parameters");
@@ -184,27 +183,31 @@ public final class ListController {
 
     LOGGER.debug("Info: Listing items;" + elasticQuery.toJson());
 
-    esService.search(docIndex, elasticQuery).onComplete(dbHandler -> {
-          if (dbHandler.succeeded()) {
-            LOGGER.debug("Success: Successful DB request");
-            List<ElasticsearchResponse> responseList = dbHandler.result();
-            DbResponseMessageBuilder responseMsg = new DbResponseMessageBuilder();
-            responseMsg.statusSuccess();
-            responseMsg.setTotalHits(responseList.size());
-            responseList.stream()
-                .map(ElasticsearchResponse::getSource)
-                .peek(source -> {
-                  source.remove(SUMMARY_KEY);
-                  source.remove(WORD_VECTOR_KEY);
-                })
-                .forEach(responseMsg::addResult);
-            promise.complete(responseMsg.getResponse());
-          } else {
-            LOGGER.error("Fail: DB request has failed;" + dbHandler.cause());
-            /* Handle request error */
-            promise.fail(internalErrorResp());
-          }
-        });
+    esService
+        .search(docIndex, elasticQuery)
+        .onComplete(
+            dbHandler -> {
+              if (dbHandler.succeeded()) {
+                LOGGER.debug("Success: Successful DB request");
+                List<ElasticsearchResponse> responseList = dbHandler.result();
+                DbResponseMessageBuilder responseMsg = new DbResponseMessageBuilder();
+                responseMsg.statusSuccess();
+                responseMsg.setTotalHits(responseList.size());
+                responseList.stream()
+                    .map(ElasticsearchResponse::getSource)
+                    .peek(
+                        source -> {
+                          source.remove(SUMMARY_KEY);
+                          source.remove(WORD_VECTOR_KEY);
+                        })
+                    .forEach(responseMsg::addResult);
+                promise.complete(responseMsg.getResponse());
+              } else {
+                LOGGER.error("Fail: DB request has failed;" + dbHandler.cause());
+                /* Handle request error */
+                promise.fail(internalErrorResp());
+              }
+            });
     return promise.future();
   }
 
@@ -215,39 +218,44 @@ public final class ListController {
 
     LOGGER.debug("Info: Listing items;" + elasticQuery.toJson());
 
-    esService.search(docIndex, elasticQuery).onComplete(dbHandler -> {
-          if (dbHandler.succeeded()) {
-            LOGGER.debug("Success: Successful DB request");
-            DbResponseMessageBuilder responseMsg = new DbResponseMessageBuilder();
-            try {
-              // Process the aggregation results
-              JsonArray results = new JsonArray();
-              JsonArray aggregations =
-                  ElasticsearchResponse.getAggregations().getJsonObject(RESULTS).getJsonArray(BUCKETS);
+    esService
+        .search(docIndex, elasticQuery)
+        .onComplete(
+            dbHandler -> {
+              if (dbHandler.succeeded()) {
+                LOGGER.debug("Success: Successful DB request");
+                DbResponseMessageBuilder responseMsg = new DbResponseMessageBuilder();
+                try {
+                  // Process the aggregation results
+                  JsonArray results = new JsonArray();
+                  JsonArray aggregations =
+                      ElasticsearchResponse.getAggregations()
+                          .getJsonObject(RESULTS)
+                          .getJsonArray(BUCKETS);
 
-              // If aggregations are present, process them once
-              if (aggregations != null && !aggregations.isEmpty()) {
-                // Add the aggregations to the results
-                aggregations.stream()
-                    .filter(bucket -> bucket instanceof JsonObject)
-                    .map(bucket -> ((JsonObject) bucket).getString(KEY))
-                    .filter(Objects::nonNull) // Filter out null keys
-                    .forEach(results::add);
+                  // If aggregations are present, process them once
+                  if (aggregations != null && !aggregations.isEmpty()) {
+                    // Add the aggregations to the results
+                    aggregations.stream()
+                        .filter(bucket -> bucket instanceof JsonObject)
+                        .map(bucket -> ((JsonObject) bucket).getString(KEY))
+                        .filter(Objects::nonNull) // Filter out null keys
+                        .forEach(results::add);
+                  }
+                  responseMsg.statusSuccess().setTotalHits(results.size());
+                  results.forEach(result -> responseMsg.addResult(result.toString()));
+
+                  promise.complete(responseMsg.getResponse());
+                } catch (Exception e) {
+                  LOGGER.error("Error processing aggregation buckets: " + e.getMessage(), e);
+                  promise.fail(internalErrorResp());
+                }
+              } else {
+                LOGGER.error("Fail: DB request has failed;" + dbHandler.cause());
+                /* Handle request error */
+                promise.fail(internalErrorResp());
               }
-              responseMsg.statusSuccess().setTotalHits(results.size());
-              results.forEach(result -> responseMsg.addResult(result.toString()));
-
-              promise.complete(responseMsg.getResponse());
-            } catch (Exception e) {
-              LOGGER.error("Error processing aggregation buckets: " + e.getMessage(), e);
-              promise.fail(internalErrorResp());
-            }
-          } else {
-            LOGGER.error("Fail: DB request has failed;" + dbHandler.cause());
-            /* Handle request error */
-            promise.fail(internalErrorResp());
-          }
-        });
+            });
     return promise.future();
   }
 

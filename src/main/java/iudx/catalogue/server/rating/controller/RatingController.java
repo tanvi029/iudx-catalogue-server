@@ -39,13 +39,13 @@ public class RatingController {
   private static final Logger LOGGER = LogManager.getLogger(RatingController.class);
 
   private final Router router;
-  private ValidatorService validatorService;
-  private RatingService ratingService;
   private final String host;
   private final AuthenticationHandler authenticationHandler;
   private final AuthorizationHandler authorizationHandler;
   private final AuditHandler auditHandler;
   private final FailureHandler failureHandler;
+  private final ValidatorService validatorService;
+  private final RatingService ratingService;
 
   public RatingController(Router router, ValidatorService validatorService,
                           RatingService ratingService, String host,
@@ -103,7 +103,8 @@ public class RatingController {
           if (skipAuth != null && skipAuth) {
             routingContext.next();  // Skip authHandler and move to the next handler
           } else {
-            authenticationHandler.handle(routingContext);  // Call authHandler only if skipAuth is false
+            // Call authHandler only if skipAuth is false
+            authenticationHandler.handle(routingContext);
             routingContext.next();
           }
         })
@@ -327,6 +328,7 @@ public class RatingController {
       }
     });
   }
+
   boolean isValidId(String id) {
     return UUID_PATTERN.matcher(id).matches();
   }

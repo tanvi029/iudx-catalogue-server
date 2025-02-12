@@ -1,9 +1,8 @@
-package iudx.catalogue.server.apiserver.Item.handler;
+package iudx.catalogue.server.apiserver.item.handler;
 
 import static iudx.catalogue.server.apiserver.util.Constants.HEADER_CONTENT_TYPE;
 import static iudx.catalogue.server.apiserver.util.Constants.HEADER_TOKEN;
 import static iudx.catalogue.server.apiserver.util.Constants.MIME_APPLICATION_JSON;
-import static iudx.catalogue.server.apiserver.util.Constants.ROUTE_ITEMS;
 import static iudx.catalogue.server.common.util.ResponseBuilderUtil.invalidSchemaResponse;
 import static iudx.catalogue.server.common.util.ResponseBuilderUtil.invalidSyntaxResponse;
 import static iudx.catalogue.server.common.util.ResponseBuilderUtil.invalidUuidResponse;
@@ -26,13 +25,13 @@ import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
-import iudx.catalogue.server.apiserver.Item.model.COS;
-import iudx.catalogue.server.apiserver.Item.model.Item;
-import iudx.catalogue.server.apiserver.Item.model.Owner;
-import iudx.catalogue.server.apiserver.Item.model.Provider;
-import iudx.catalogue.server.apiserver.Item.model.Resource;
-import iudx.catalogue.server.apiserver.Item.model.ResourceGroup;
-import iudx.catalogue.server.apiserver.Item.model.ResourceServer;
+import iudx.catalogue.server.apiserver.item.model.COS;
+import iudx.catalogue.server.apiserver.item.model.Item;
+import iudx.catalogue.server.apiserver.item.model.Owner;
+import iudx.catalogue.server.apiserver.item.model.Provider;
+import iudx.catalogue.server.apiserver.item.model.Resource;
+import iudx.catalogue.server.apiserver.item.model.ResourceGroup;
+import iudx.catalogue.server.apiserver.item.model.ResourceServer;
 import iudx.catalogue.server.authenticator.model.JwtAuthenticationInfo;
 import iudx.catalogue.server.common.RoutingContextHelper;
 import java.util.HashSet;
@@ -79,7 +78,6 @@ public class ItemSchemaHandler implements Handler<RoutingContext> {
     LOGGER.debug("Info: Creating/Updating item");
     /* Contains the cat-item */
     JsonObject requestBody = routingContext.body().asJsonObject();
-    HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
     response.putHeader(HEADER_CONTENT_TYPE, MIME_APPLICATION_JSON);
 
@@ -93,7 +91,7 @@ public class ItemSchemaHandler implements Handler<RoutingContext> {
     // populating jwt authentication info ->
     JwtAuthenticationInfo.Builder jwtAuthenticationInfo =
         new JwtAuthenticationInfo.Builder()
-            .setToken(request.getHeader(HEADER_TOKEN))
+            .setToken(routingContext.request().getHeader(HEADER_TOKEN))
             .setApiEndpoint(routingContext.normalizedPath())
             .setItemType(itemType);
     if (routingContext.request().method().toString().equals(REQUEST_POST)) {

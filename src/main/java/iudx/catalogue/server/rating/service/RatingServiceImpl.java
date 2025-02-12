@@ -52,7 +52,6 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-
 public class RatingServiceImpl implements RatingService {
   private static final Logger LOGGER = LogManager.getLogger(RatingServiceImpl.class);
   private final String rsauditingtable;
@@ -67,13 +66,13 @@ public class RatingServiceImpl implements RatingService {
   /**
    * Constructor for RatingServiceImpl class. Initializes the object with the given parameters.
    *
-   * @param exchangeName         the name of the exchange used for rating
-   * @param rsauditingtable      the name of the table used for auditing the rating system
-   * @param minReadNumber        the minimum number of reads for a rating to be considered valid
-   * @param ratingIndex          the index of the rating docs
+   * @param exchangeName the name of the exchange used for rating
+   * @param rsauditingtable the name of the table used for auditing the rating system
+   * @param minReadNumber the minimum number of reads for a rating to be considered valid
+   * @param ratingIndex the index of the rating docs
    * @param elasticsearchService the service used for interacting with the database
-   * @param rmqService           the service used for interacting with the data broker
-   * @param postgresService      the service used for interacting with the PostgreSQL database
+   * @param rmqService the service used for interacting with the data broker
+   * @param postgresService the service used for interacting with the PostgreSQL database
    */
   public RatingServiceImpl(
       String exchangeName,
@@ -108,8 +107,8 @@ public class RatingServiceImpl implements RatingService {
     QueryModel statusMatchQuery = new QueryModel(MATCH, statusParams);
 
     // Construct the Bool query with must and must_not clauses
-    QueryModel queryModel = new QueryModel(List.of(ratingIdMatchQuery, statusMatchQuery), null,
-        null, null);
+    QueryModel queryModel =
+        new QueryModel(List.of(ratingIdMatchQuery, statusMatchQuery), null, null, null);
     queryModel.setIncludeFields(List.of(ID, "rating"));
     return queryModel;
   }
@@ -120,8 +119,9 @@ public class RatingServiceImpl implements RatingService {
 
     String sub = ratingDoc.getString(USER_ID);
     String id = ratingDoc.getString(ID);
-    StringBuilder query = new StringBuilder(AUDIT_INFO_QUERY
-        .replace("$1", rsauditingtable).replace("$2", sub).replace("$3", id));
+    StringBuilder query =
+        new StringBuilder(
+            AUDIT_INFO_QUERY.replace("$1", rsauditingtable).replace("$2", sub).replace("$3", id));
     Future<JsonObject> getRsAuditingInfo = getAuditingInfo(query);
 
     getRsAuditingInfo
@@ -138,36 +138,43 @@ public class RatingServiceImpl implements RatingService {
                 QueryModel queryModel = new QueryModel();
                 queryModel.setQueries(getQueryModel("ratingID" + ".keyword", ratingId));
 
-                esService.search(ratingIndex, queryModel).onComplete(checkRes -> {
-                  if (checkRes.failed()) {
-                    LOGGER.error("Fail: Insertion of rating failed: " + checkRes.cause());
-                    promise.fail(failureResp(ratingId));
-                  } else {
-                    if (!checkRes.result().isEmpty()) {
-                      promise.fail(
-                          itemAlreadyExistsResponse(ratingId, " Fail: Doc Already Exists"));
-                      return;
-                    }
-                    esService.createDocument(ratingIndex, ratingDoc)
-                        .onComplete(postRes -> {
-                          if (postRes.failed()) {
-                            LOGGER.error("Fail: Insertion failed" + postRes.cause());
-                            promise.fail(failureResponse(ratingId));
+                esService
+                    .search(ratingIndex, queryModel)
+                    .onComplete(
+                        checkRes -> {
+                          if (checkRes.failed()) {
+                            LOGGER.error("Fail: Insertion of rating failed: " + checkRes.cause());
+                            promise.fail(failureResp(ratingId));
                           } else {
-                            LOGGER.info("Success: Rating Recorded");
-                            promise.complete(successResponse(ratingId));
+                            if (!checkRes.result().isEmpty()) {
+                              promise.fail(
+                                  itemAlreadyExistsResponse(ratingId, " Fail: Doc Already Exists"));
+                              return;
+                            }
+                            esService
+                                .createDocument(ratingIndex, ratingDoc)
+                                .onComplete(
+                                    postRes -> {
+                                      if (postRes.failed()) {
+                                        LOGGER.error("Fail: Insertion failed" + postRes.cause());
+                                        promise.fail(failureResponse(ratingId));
+                                      } else {
+                                        LOGGER.info("Success: Rating Recorded");
+                                        promise.complete(successResponse(ratingId));
+                                      }
+                                    });
                           }
                         });
-                  }
-                });
               } else {
                 LOGGER.error("Fail: Rating creation failed");
                 promise.fail(
                     new RespBuilder()
                         .withType(TYPE_ACCESS_DENIED)
                         .withTitle(TITLE_REQUIREMENTS_NOT_MET)
-                        .withDetail("User has to access resource at least "
-                            + minReadNumber + " times to give rating")
+                        .withDetail(
+                            "User has to access resource at least "
+                                + minReadNumber
+                                + " times to give rating")
                         .getResponse());
               }
             })
@@ -206,51 +213,60 @@ public class RatingServiceImpl implements RatingService {
             ids -> {
               if (ids.succeeded()) {
                 QueryModel avgRatingQuery = getAverageRatingQueryModel(ids.result());
-                esService.search(ratingIndex, avgRatingQuery).onComplete(
-                    getRes -> {
-                      if (getRes.succeeded()) {
-                        LOGGER.debug("Success: Successful DB request");
-                        DbResponseMessageBuilder responseMsg = new DbResponseMessageBuilder();
-                        responseMsg.statusSuccess().setTotalHits(getRes.result().size());
-                        try {
-                          JsonArray globalAggregations = getAggregations()
-                              .getJsonObject(Constants.RESULTS).getJsonArray(BUCKETS);
-                          // Process the global aggregations using streams
-                          globalAggregations.stream()
-                              .filter(
-                                  aggregation -> aggregation instanceof JsonObject)  // Ensure it's a JsonObject
-                              .map(aggregation -> {
-                                JsonObject aggObj = (JsonObject) aggregation;
+                esService
+                    .search(ratingIndex, avgRatingQuery)
+                    .onComplete(
+                        getRes -> {
+                          if (getRes.succeeded()) {
+                            LOGGER.debug("Success: Successful DB request");
+                            DbResponseMessageBuilder responseMsg = new DbResponseMessageBuilder();
+                            responseMsg.statusSuccess().setTotalHits(getRes.result().size());
+                            try {
+                              JsonArray globalAggregations =
+                                  getAggregations()
+                                      .getJsonObject(Constants.RESULTS)
+                                      .getJsonArray(BUCKETS);
+                              // Process the global aggregations using streams
+                              globalAggregations.stream()
+                                  .filter(
+                                      aggregation ->
+                                          aggregation
+                                              instanceof JsonObject) // Ensure it's a JsonObject
+                                  .map(
+                                      aggregation -> {
+                                        JsonObject aggObj = (JsonObject) aggregation;
 
-                                // Extract the necessary fields from the aggregation
-                                String key = aggObj.getString(KEY);
-                                String totalRatings = aggObj.getString(DOC_COUNT);
-                                double averageRating =
-                                    aggObj.getJsonObject(AVERAGE_RATING).getDouble(VALUE);
+                                        // Extract the necessary fields from the aggregation
+                                        String key = aggObj.getString(KEY);
+                                        String totalRatings = aggObj.getString(DOC_COUNT);
+                                        double averageRating =
+                                            aggObj.getJsonObject(AVERAGE_RATING).getDouble(VALUE);
 
-                                // Create and return a new JsonObject with the extracted fields
-                                return new JsonObject()
-                                    .put(ID, key)
-                                    .put(TOTAL_RATINGS, totalRatings)
-                                    .put(AVERAGE_RATING, averageRating);
-                              })
-                              .forEach(
-                                  responseMsg::addResult);  // Add each result to the response message
+                                        // Create and return a new JsonObject with the extracted
+                                        // fields
+                                        return new JsonObject()
+                                            .put(ID, key)
+                                            .put(TOTAL_RATINGS, totalRatings)
+                                            .put(AVERAGE_RATING, averageRating);
+                                      })
+                                  .forEach(
+                                      responseMsg
+                                          ::addResult); // Add each result to the response message
 
-                          // Complete the promise
-                          promise.complete(responseMsg.getResponse());
+                              // Complete the promise
+                              promise.complete(responseMsg.getResponse());
 
-                        } catch (Exception e) {
-                          LOGGER.error("Error processing global aggregations: " + e.getMessage(),
-                              e);
-                          promise.fail(internalErrorResp());
-                        }
+                            } catch (Exception e) {
+                              LOGGER.error(
+                                  "Error processing global aggregations: " + e.getMessage(), e);
+                              promise.fail(internalErrorResp());
+                            }
 
-                      } else {
-                        LOGGER.error("Fail: failed getting average rating: " + getRes.cause());
-                        promise.fail(internalErrorResp());
-                      }
-                    });
+                          } else {
+                            LOGGER.error("Fail: failed getting average rating: " + getRes.cause());
+                            promise.fail(internalErrorResp());
+                          }
+                        });
               } else {
                 promise.fail(internalErrorResp());
               }
@@ -263,25 +279,27 @@ public class RatingServiceImpl implements RatingService {
       }
     }
 
-    esService.search(ratingIndex, queryModel).onComplete(
-        getRes -> {
-          if (getRes.succeeded()) {
-            LOGGER.debug("Success: Successful DB request");
-            List<ElasticsearchResponse> responseList = getRes.result();
-            DbResponseMessageBuilder responseMsg = new DbResponseMessageBuilder();
-            responseMsg.statusSuccess();
-            if (!request.containsKey(RATING_ID)) {
-              responseMsg.setTotalHits(responseList.size());
-            }
-            responseList.stream()
-                .map(ElasticsearchResponse::getSource)
-                .forEach(responseMsg::addResult);
-            promise.complete(responseMsg.getResponse());
-          } else {
-            LOGGER.error("Fail: failed getting rating: " + getRes.cause());
-            promise.fail(internalErrorResp());
-          }
-        });
+    esService
+        .search(ratingIndex, queryModel)
+        .onComplete(
+            getRes -> {
+              if (getRes.succeeded()) {
+                LOGGER.debug("Success: Successful DB request");
+                List<ElasticsearchResponse> responseList = getRes.result();
+                DbResponseMessageBuilder responseMsg = new DbResponseMessageBuilder();
+                responseMsg.statusSuccess();
+                if (!request.containsKey(RATING_ID)) {
+                  responseMsg.setTotalHits(responseList.size());
+                }
+                responseList.stream()
+                    .map(ElasticsearchResponse::getSource)
+                    .forEach(responseMsg::addResult);
+                promise.complete(responseMsg.getResponse());
+              } else {
+                LOGGER.error("Fail: failed getting rating: " + getRes.cause());
+                promise.fail(internalErrorResp());
+              }
+            });
     return promise.future();
   }
 
@@ -301,52 +319,47 @@ public class RatingServiceImpl implements RatingService {
     Map<String, Object> avgAggParams = new HashMap<>();
     avgAggParams.put(FIELD, "rating");
 
-// Create the "average_rating" nested aggregation
-    QueryModel avgRatingAgg = new QueryModel(
-        AVG,
-        avgAggParams
-    );
+    // Create the "average_rating" nested aggregation
+    QueryModel avgRatingAgg = new QueryModel(AVG, avgAggParams);
 
-// Create the outer "results" aggregation with the "terms" aggregation and nested "average_rating" aggregation
+    // Create the outer "results" aggregation with the "terms" aggregation and nested
+    // "average_rating" aggregation
     Map<String, Object> termsAggParams = new HashMap<>();
     termsAggParams.put(FIELD, ID_KEYWORD);
 
-    QueryModel termsAgg = new QueryModel(
-        AggregationType.TERMS,
-        termsAggParams
-    );
+    QueryModel termsAgg = new QueryModel(AggregationType.TERMS, termsAggParams);
     termsAgg.setAggregationName(RESULTS);
     termsAgg.setAggregationsMap(Map.of("average_rating", avgRatingAgg));
     return new QueryModel(queryModel, List.of(termsAgg));
   }
 
   private Future<List<String>> getAssociatedIDs(String id) {
-    Promise<List<String>> promise = Promise.promise();
-
     QueryModel idMatch = new QueryModel(MATCH, Map.of(FIELD, ID_KEYWORD, VALUE, id));
     QueryModel resourceGroupMatch =
         new QueryModel(MATCH, Map.of(FIELD, "resourceGroup" + KEYWORD_KEY, VALUE, id));
-
     QueryModel queryModel = new QueryModel();
     queryModel.setQueries(
         new QueryModel(BoolOperator.SHOULD, List.of(idMatch, resourceGroupMatch)));
     queryModel.setMinimumShouldMatch("1");
     queryModel.setIncludeFields(List.of(ID));
 
-    esService.search(docIndex, queryModel).onComplete(
-        res -> {
-          if (res.succeeded()) {
-            List<String> idCollector =
-                res.result().stream()
-                    .map(ElasticsearchResponse::getSource)
-                    .map(d -> d.getString(ID))
-                    .collect(Collectors.toList());
-            promise.complete(idCollector);
-          } else {
-            LOGGER.error("Fail: Get average rating failed");
-            promise.fail("Fail: Get average rating failed");
-          }
-        });
+    Promise<List<String>> promise = Promise.promise();
+    esService
+        .search(docIndex, queryModel)
+        .onComplete(
+            res -> {
+              if (res.succeeded()) {
+                List<String> idCollector =
+                    res.result().stream()
+                        .map(ElasticsearchResponse::getSource)
+                        .map(d -> d.getString(ID))
+                        .collect(Collectors.toList());
+                promise.complete(idCollector);
+              } else {
+                LOGGER.error("Fail: Get average rating failed");
+                promise.fail("Fail: Get average rating failed");
+              }
+            });
     return promise.future();
   }
 
@@ -362,30 +375,36 @@ public class RatingServiceImpl implements RatingService {
     ratingDoc.put(RATING_ID, ratingId);
     QueryModel queryModel = new QueryModel();
     queryModel.setQueries(getQueryModel("ratingID.keyword", ratingId));
-    //TODO: Filter ID only path
-    esService.search(ratingIndex, queryModel).onComplete(checkRes -> {
-      if (checkRes.failed()) {
-        LOGGER.error("Fail: Check query fail;" + checkRes.cause());
-        promise.fail(internalErrorResp());
-      } else {
-        if (checkRes.result().size() != 1) {
-          LOGGER.error("Fail: Doc doesn't exist, can't update");
-          promise.fail(itemNotFoundResponse(
-              ratingId, UPDATE, "Fail: Doc doesn't exist, can't update"));
-          return;
-        }
-        String docId = checkRes.result().get(0).getDocId();
-        esService.updateDocument(ratingIndex, docId, ratingDoc)
-            .onComplete(putRes -> {
-              if (putRes.failed()) {
+    // TODO: Filter ID only path
+    esService
+        .search(ratingIndex, queryModel)
+        .onComplete(
+            checkRes -> {
+              if (checkRes.failed()) {
+                LOGGER.error("Fail: Check query fail;" + checkRes.cause());
                 promise.fail(internalErrorResp());
-                LOGGER.error("Fail: Updation failed;" + putRes.cause());
               } else {
-                promise.complete(ratingSuccessResponse(ratingId));
+                if (checkRes.result().size() != 1) {
+                  LOGGER.error("Fail: Doc doesn't exist, can't update");
+                  promise.fail(
+                      itemNotFoundResponse(
+                          ratingId, UPDATE, "Fail: Doc doesn't exist, can't update"));
+                  return;
+                }
+                String docId = checkRes.result().get(0).getDocId();
+                esService
+                    .updateDocument(ratingIndex, docId, ratingDoc)
+                    .onComplete(
+                        putRes -> {
+                          if (putRes.failed()) {
+                            promise.fail(internalErrorResp());
+                            LOGGER.error("Fail: Updation failed;" + putRes.cause());
+                          } else {
+                            promise.complete(ratingSuccessResponse(ratingId));
+                          }
+                        });
               }
             });
-      }
-    });
     return promise.future();
   }
 
@@ -402,53 +421,64 @@ public class RatingServiceImpl implements RatingService {
 
     QueryModel queryModel = new QueryModel();
     queryModel.setQueries(getQueryModel("ratingID.keyword", ratingId));
-    //TODO: Filter ID only path
-    esService.search(ratingIndex, queryModel).onComplete(checkRes -> {
-      if (checkRes.failed()) {
-        LOGGER.error("Fail: Check query fail;" + checkRes.cause());
-        promise.fail(internalErrorResp());
-      } else {
-        if (checkRes.result().size() != 1) {
-          LOGGER.error("Fail: Doc doesn't exist, can't delete");
-          promise.fail(itemNotFoundResponse(
-              ratingId, DELETE, "Fail: Doc doesn't exist, can't delete"));
-          return;
-        }
-        String docId = checkRes.result().get(0).getDocId();
-        esService.deleteDocument(ratingIndex, docId)
-            .onComplete(delRes -> {
-              if (delRes.succeeded()) {
-                promise.complete(ratingSuccessResponse(ratingId));
-              } else {
+    // TODO: Filter ID only path
+    esService
+        .search(ratingIndex, queryModel)
+        .onComplete(
+            checkRes -> {
+              if (checkRes.failed()) {
+                LOGGER.error("Fail: Check query fail;" + checkRes.cause());
                 promise.fail(internalErrorResp());
-                LOGGER.error("Fail: Deletion failed;" + delRes.cause());
+              } else {
+                if (checkRes.result().size() != 1) {
+                  LOGGER.error("Fail: Doc doesn't exist, can't delete");
+                  promise.fail(
+                      itemNotFoundResponse(
+                          ratingId, DELETE, "Fail: Doc doesn't exist, can't delete"));
+                  return;
+                }
+                String docId = checkRes.result().get(0).getDocId();
+                esService
+                    .deleteDocument(ratingIndex, docId)
+                    .onComplete(
+                        delRes -> {
+                          if (delRes.succeeded()) {
+                            promise.complete(ratingSuccessResponse(ratingId));
+                          } else {
+                            promise.fail(internalErrorResp());
+                            LOGGER.error("Fail: Deletion failed;" + delRes.cause());
+                          }
+                        });
               }
             });
-      }
-    });
     return promise.future();
   }
 
   public Future<JsonObject> getAuditingInfo(StringBuilder query) {
     Promise<JsonObject> promise = Promise.promise();
-    postgresService.executeCountQuery(query.toString()).onComplete(pgHandler -> {
-      if (pgHandler.succeeded()) {
-        promise.complete(pgHandler.result());
-      } else {
-        promise.fail(pgHandler.cause());
-      }
-    });
+    postgresService
+        .executeCountQuery(query.toString())
+        .onComplete(
+            pgHandler -> {
+              if (pgHandler.succeeded()) {
+                promise.complete(pgHandler.result());
+              } else {
+                promise.fail(pgHandler.cause());
+              }
+            });
     return promise.future();
   }
 
   public void publishMessage(QueryObject rmqMessage) {
-    rmqService.publishMessage(rmqMessage, ratingExchangeName, "#").onComplete(
-        handler -> {
-          if (handler.succeeded()) {
-            LOGGER.info("Rating info publish to RabbitMQ");
-          } else {
-            LOGGER.error("Failed to publish Rating info");
-          }
-        });
+    rmqService
+        .publishMessage(rmqMessage, ratingExchangeName, "#")
+        .onComplete(
+            handler -> {
+              if (handler.succeeded()) {
+                LOGGER.info("Rating info publish to RabbitMQ");
+              } else {
+                LOGGER.error("Failed to publish Rating info");
+              }
+            });
   }
 }

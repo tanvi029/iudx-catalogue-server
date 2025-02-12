@@ -1,4 +1,4 @@
-package iudx.catalogue.server.apiserver.Item.model;
+package iudx.catalogue.server.apiserver.item.model;
 
 import io.vertx.core.json.JsonObject;
 import java.util.List;

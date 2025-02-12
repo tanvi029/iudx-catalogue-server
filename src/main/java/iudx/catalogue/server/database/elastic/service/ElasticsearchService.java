@@ -20,9 +20,14 @@ public interface ElasticsearchService {
   }
 
   Future<List<ElasticsearchResponse>> search(String index, QueryModel queryModel);
+
   Future<JsonObject> createDocument(String index, JsonObject document);
+
   Future<JsonObject> updateDocument(String index, String id, JsonObject document);
+
   Future<JsonObject> patchDocument(String index, String id, JsonObject document);
+
   Future<JsonObject> deleteDocument(String index, String id);
+
   Future<Integer> count(String index, QueryModel queryModel);
 }

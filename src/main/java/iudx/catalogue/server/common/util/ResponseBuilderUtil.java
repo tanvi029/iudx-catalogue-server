@@ -7,25 +7,18 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import iudx.catalogue.server.common.RespBuilder;
 
-public class
-ResponseBuilderUtil {
+public class ResponseBuilderUtil {
 
   private static RespBuilder createResponseBuilder(String type, String title, String detail) {
-    return new RespBuilder()
-        .withType(type)
-        .withTitle(title)
-        .withDetail(detail);
+    return new RespBuilder().withType(type).withTitle(title).withDetail(detail);
   }
 
   private static RespBuilder createResponseBuilder(String type, String title) {
-    return new RespBuilder()
-        .withType(type)
-        .withTitle(title);
+    return new RespBuilder().withType(type).withTitle(title);
   }
 
   public static String invalidSchemaResponse(String detail) {
-    return createResponseBuilder(TYPE_INVALID_SCHEMA, TITLE_INVALID_SCHEMA, detail)
-        .getResponse();
+    return createResponseBuilder(TYPE_INVALID_SCHEMA, TITLE_INVALID_SCHEMA, detail).getResponse();
   }
 
   public static String linkValidationFailureResponse(String detail) {
@@ -34,13 +27,11 @@ ResponseBuilderUtil {
   }
 
   public static String invalidUuidResponse(String detail) {
-    return createResponseBuilder(TYPE_INVALID_UUID, TITLE_INVALID_UUID, detail)
-        .getResponse();
+    return createResponseBuilder(TYPE_INVALID_UUID, TITLE_INVALID_UUID, detail).getResponse();
   }
 
   public static String itemNotFoundResponse(String detail) {
-    return createResponseBuilder(TYPE_ITEM_NOT_FOUND, TITLE_ITEM_NOT_FOUND, detail)
-        .getResponse();
+    return createResponseBuilder(TYPE_ITEM_NOT_FOUND, TITLE_ITEM_NOT_FOUND, detail).getResponse();
   }
 
   public static String itemNotFoundResponse(String id, String detail) {
@@ -61,13 +52,12 @@ ResponseBuilderUtil {
   }
 
   public static String invalidSyntaxResponse(String detail) {
-    return createResponseBuilder(TYPE_INVALID_SYNTAX, TITLE_INVALID_SYNTAX, detail)
-        .getResponse();
+    return createResponseBuilder(TYPE_INVALID_SYNTAX, TITLE_INVALID_SYNTAX, detail).getResponse();
   }
 
   public static String internalErrorResp() {
-    return createResponseBuilder(TYPE_INTERNAL_SERVER_ERROR, TITLE_INTERNAL_SERVER_ERROR,
-        DETAIL_INTERNAL_SERVER_ERROR)
+    return createResponseBuilder(
+            TYPE_INTERNAL_SERVER_ERROR, TITLE_INTERNAL_SERVER_ERROR, DETAIL_INTERNAL_SERVER_ERROR)
         .getResponse();
   }
 
@@ -90,9 +80,7 @@ ResponseBuilderUtil {
   }
 
   public static JsonObject successResponse(JsonArray result) {
-    return createResponseBuilder(TYPE_SUCCESS, TITLE_SUCCESS)
-        .withResult(result)
-        .getJsonResponse();
+    return createResponseBuilder(TYPE_SUCCESS, TITLE_SUCCESS).withResult(result).getJsonResponse();
   }
 
   public static JsonObject successResponse(String id) {
@@ -102,9 +90,7 @@ ResponseBuilderUtil {
   }
 
   public static JsonObject ratingSuccessResponse(String id) {
-    return createResponseBuilder(TYPE_SUCCESS, TITLE_SUCCESS)
-        .withResult(id)
-        .getJsonResponse();
+    return createResponseBuilder(TYPE_SUCCESS, TITLE_SUCCESS).withResult(id).getJsonResponse();
   }
 
   public static String failureResponse(String id) {
@@ -114,8 +100,8 @@ ResponseBuilderUtil {
   }
 
   public static String failureResp(String id) {
-    return createResponseBuilder(FAILED, "Fail: Insertion of rating failed",
-        "Fail: Insertion of rating failed")
+    return createResponseBuilder(
+            FAILED, "Fail: Insertion of rating failed", "Fail: Insertion of rating failed")
         .withResult(id)
         .getResponse();
   }
@@ -139,8 +125,8 @@ ResponseBuilderUtil {
   }
 
   public static String invalidSearchError() {
-    return createResponseBuilder(TYPE_INVALID_SEARCH_ERROR, TITLE_INVALID_SEARCH_ERROR,
-        TITLE_INVALID_SEARCH_ERROR)
+    return createResponseBuilder(
+            TYPE_INVALID_SEARCH_ERROR, TITLE_INVALID_SEARCH_ERROR, TITLE_INVALID_SEARCH_ERROR)
         .getResponse();
   }
 

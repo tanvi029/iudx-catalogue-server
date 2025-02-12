@@ -9,10 +9,9 @@ import iudx.catalogue.server.authenticator.model.JwtData;
 
 /**
  * Utility class for managing context data in a {@link RoutingContext}.
- * <p>
- * This class provides methods to set and retrieve various types of information within the context,
- * including JWT authentication info, decoded JWT details, and validated request data.
- * </p>
+ *
+ * <p>This class provides methods to set and retrieve various types of information within the
+ * context, including JWT authentication info, decoded JWT details, and validated request data.
  */
 public class RoutingContextHelper {
 
@@ -23,11 +22,11 @@ public class RoutingContextHelper {
   /**
    * Stores the JWT authentication information in the context.
    *
-   * @param context               the routing context in which to store the data
+   * @param context the routing context in which to store the data
    * @param jwtAuthenticationInfo the JWT authentication information to store
    */
-  public static void setJwtAuthInfo(RoutingContext context,
-                                    JwtAuthenticationInfo jwtAuthenticationInfo) {
+  public static void setJwtAuthInfo(
+      RoutingContext context, JwtAuthenticationInfo jwtAuthenticationInfo) {
     context.put(JWT_AUTH_INFO_KEY, jwtAuthenticationInfo);
   }
 
@@ -44,7 +43,7 @@ public class RoutingContextHelper {
   /**
    * Stores the decoded JWT information in the context.
    *
-   * @param context        the routing context in which to store the data
+   * @param context the routing context in which to store the data
    * @param jwtDecodedInfo the decoded JWT information to store
    */
   public static void setJwtDecodedInfo(RoutingContext context, JwtData jwtDecodedInfo) {
@@ -64,7 +63,7 @@ public class RoutingContextHelper {
   /**
    * Stores the validated request data in the context.
    *
-   * @param context          the routing context in which to store the data
+   * @param context the routing context in which to store the data
    * @param validatedRequest the validated request data to store
    */
   public static void setValidatedRequest(RoutingContext context, JsonObject validatedRequest) {

@@ -1,10 +1,5 @@
 package iudx.catalogue.server.relationship.controller;
 
-/**
- * <h1>RelationshipController.java</h1>
- * Callback handlers for Relationship APIs
- */
-
 import static iudx.catalogue.server.apiserver.util.Constants.*;
 import static iudx.catalogue.server.util.Constants.*;
 
@@ -20,9 +15,14 @@ import iudx.catalogue.server.relationship.service.RelationshipService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-
+/**
+ *
+ *
+ * <h1>RelationshipController.java</h1>
+ *
+ * <p>Callback handlers for Relationship APIs</p>
+ */
 public final class RelationshipController {
-
 
   private static final Logger LOGGER = LogManager.getLogger(RelationshipController.class);
   private final Router router;
@@ -38,14 +38,10 @@ public final class RelationshipController {
   private void setupRoutes() {
 
     /* Relationship related search */
-    router
-        .get(ROUTE_REL_SEARCH)
-        .handler(this::relSearchHandler);
+    router.get(ROUTE_REL_SEARCH).handler(this::relSearchHandler);
 
     /* Get all resources belonging to a resource group */
-    router
-        .get(ROUTE_RELATIONSHIP)
-        .handler(this::listRelationshipHandler);
+    router.get(ROUTE_RELATIONSHIP).handler(this::listRelationshipHandler);
   }
 
   public Router getRouter() {
@@ -86,55 +82,62 @@ public final class RelationshipController {
             /*
              * Request database service with requestBody for listing resource relationship
              */
-            relationshipService.listRelationship(requestBody).onComplete(dbhandler -> {
-              if (dbhandler.succeeded()) {
-                LOGGER.info("Success: Retrieved relationships of " + itemType);
-                response.setStatusCode(200).end(dbhandler.result().toString());
-              } else if (dbhandler.failed()) {
-                LOGGER
-                    .error("Fail: Issue in listing relationship;" + dbhandler.cause().getMessage());
-                response.setStatusCode(400)
-                    .end(dbhandler.cause().getMessage());
-              }
-            });
+            relationshipService
+                .listRelationship(requestBody)
+                .onComplete(
+                    dbhandler -> {
+                      if (dbhandler.succeeded()) {
+                        LOGGER.info("Success: Retrieved relationships of " + itemType);
+                        response.setStatusCode(200).end(dbhandler.result().toString());
+                      } else if (dbhandler.failed()) {
+                        LOGGER.error(
+                            "Fail: Issue in listing relationship;"
+                                + dbhandler.cause().getMessage());
+                        response.setStatusCode(400).end(dbhandler.cause().getMessage());
+                      }
+                    });
           } else {
             LOGGER.error("Fail: Search; Invalid request query parameters");
-            response.setStatusCode(400)
-                .end(resp.toString());
+            response.setStatusCode(400).end(resp.toString());
           }
         } else {
           LOGGER.error("Fail: Search; Invalid request query parameters");
-          response.setStatusCode(400)
-              .end(new RespBuilder()
-                  .withType(TYPE_INVALID_SYNTAX)
-                  .withTitle(TITLE_INVALID_SYNTAX)
-                  .withDetail("Invalid Syntax")
-                  .getResponse());
+          response
+              .setStatusCode(400)
+              .end(
+                  new RespBuilder()
+                      .withType(TYPE_INVALID_SYNTAX)
+                      .withTitle(TITLE_INVALID_SYNTAX)
+                      .withDetail("Invalid Syntax")
+                      .getResponse());
         }
       } else {
         LOGGER.error("Fail: Issue in query parameter");
-        response.setStatusCode(400)
-            .end(new RespBuilder()
-                .withType(TYPE_INVALID_QUERY_PARAM_VALUE)
-                .withTitle(TITLE_INVALID_QUERY_PARAM_VALUE)
-                .withDetail("Invalid relationship value")
-                .getResponse());
+        response
+            .setStatusCode(400)
+            .end(
+                new RespBuilder()
+                    .withType(TYPE_INVALID_QUERY_PARAM_VALUE)
+                    .withTitle(TITLE_INVALID_QUERY_PARAM_VALUE)
+                    .withDetail("Invalid relationship value")
+                    .getResponse());
       }
     } else {
       LOGGER.error("Fail: Issue in query parameter");
-      response.setStatusCode(400)
-          .end(new RespBuilder()
-              .withType(TYPE_MISSING_PARAMS)
-              .withTitle(TITLE_MISSING_PARAMS)
-              .withDetail("Mandatory field(s) not provided")
-              .getResponse());
+      response
+          .setStatusCode(400)
+          .end(
+              new RespBuilder()
+                  .withType(TYPE_MISSING_PARAMS)
+                  .withTitle(TITLE_MISSING_PARAMS)
+                  .withDetail("Mandatory field(s) not provided")
+                  .getResponse());
     }
   }
 
   private boolean isValidId(String id) {
     return UUID_PATTERN.matcher(id).matches();
   }
-
 
   /**
    * Relationship search of the cataloque items.
@@ -164,40 +167,48 @@ public final class RelationshipController {
         requestBody.put(INSTANCE, instanceId);
 
         /* Request database service with requestBody for listing domains */
-        relationshipService.relSearch(requestBody).onComplete(dbhandler -> {
-          if (dbhandler.succeeded()) {
-            LOGGER.info("Info: Relationship search completed");
-            response.putHeader(HEADER_CONTENT_TYPE, MIME_APPLICATION_JSON)
-                .setStatusCode(200)
-                .end(dbhandler.result().toString());
-          } else if (dbhandler.failed()) {
-            LOGGER.error("Fail: Issue in relationship search "
-                + dbhandler.cause().getMessage());
-            response.putHeader(HEADER_CONTENT_TYPE, MIME_APPLICATION_JSON)
-                .setStatusCode(400)
-                .end(dbhandler.cause().getMessage());
-          }
-        });
+        relationshipService
+            .relSearch(requestBody)
+            .onComplete(
+                dbhandler -> {
+                  if (dbhandler.succeeded()) {
+                    LOGGER.info("Info: Relationship search completed");
+                    response
+                        .putHeader(HEADER_CONTENT_TYPE, MIME_APPLICATION_JSON)
+                        .setStatusCode(200)
+                        .end(dbhandler.result().toString());
+                  } else if (dbhandler.failed()) {
+                    LOGGER.error(
+                        "Fail: Issue in relationship search " + dbhandler.cause().getMessage());
+                    response
+                        .putHeader(HEADER_CONTENT_TYPE, MIME_APPLICATION_JSON)
+                        .setStatusCode(400)
+                        .end(dbhandler.cause().getMessage());
+                  }
+                });
       } else {
         LOGGER.error("Fail: Invalid request query parameters");
-        response.putHeader(HEADER_CONTENT_TYPE, MIME_APPLICATION_JSON)
+        response
+            .putHeader(HEADER_CONTENT_TYPE, MIME_APPLICATION_JSON)
             .setStatusCode(400)
-            .end(new RespBuilder()
-                .withType(TYPE_INVALID_SYNTAX)
-                .withTitle(TITLE_INVALID_SYNTAX)
-                .withDetail("Invalid Syntax")
-                .getResponse());
+            .end(
+                new RespBuilder()
+                    .withType(TYPE_INVALID_SYNTAX)
+                    .withTitle(TITLE_INVALID_SYNTAX)
+                    .withDetail("Invalid Syntax")
+                    .getResponse());
       }
     } else {
       LOGGER.error("Fail: Invalid request query parameters");
-      response.putHeader(HEADER_CONTENT_TYPE, MIME_APPLICATION_JSON)
+      response
+          .putHeader(HEADER_CONTENT_TYPE, MIME_APPLICATION_JSON)
           .setStatusCode(400)
-          .end(new RespBuilder()
-              .withType(TYPE_INVALID_SYNTAX)
-              .withTitle(TITLE_INVALID_SYNTAX)
-              .withDetail("Invalid Syntax")
-              .getResponse());
+          .end(
+              new RespBuilder()
+                  .withType(TYPE_INVALID_SYNTAX)
+                  .withTitle(TITLE_INVALID_SYNTAX)
+                  .withDetail("Invalid Syntax")
+                  .getResponse());
     }
   }
 }
-

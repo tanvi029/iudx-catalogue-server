@@ -31,9 +31,11 @@ public class MlayerController {
   private final AuthenticationHandler authenticationHandler;
   private final String host;
 
-  public MlayerController(String host, Router router, ValidatorService validationService,
+  public MlayerController(String host, Router router,
+                          ValidatorService validationService,
                           MlayerService mlayerService,
-                          FailureHandler failureHandler, AuthenticationHandler authenticationHandler) {
+                          FailureHandler failureHandler,
+                          AuthenticationHandler authenticationHandler) {
     this.host = host;
     this.router = router;
     this.validatorService = validationService;

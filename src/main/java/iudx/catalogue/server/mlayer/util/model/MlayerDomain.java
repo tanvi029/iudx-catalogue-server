@@ -222,9 +222,7 @@ public class MlayerDomain {
   }
 
   public Future<JsonObject> deleteMlayerDomain(String domainId) {
-    Promise<JsonObject> promise = Promise.promise();
-    RespBuilder respBuilder = new RespBuilder();
-    LOGGER.debug(domainId);
+    LOGGER.debug("domainId: " + domainId);
 
     QueryModel query = new QueryModel(QueryType.BOOL);
     query.addMustQuery(
@@ -232,6 +230,8 @@ public class MlayerDomain {
     QueryModel queryModel = new QueryModel();
     queryModel.setQueries(query);
 
+    Promise<JsonObject> promise = Promise.promise();
+    RespBuilder respBuilder = new RespBuilder();
     esService.search(mlayerDomainIndex, queryModel)
         .onComplete(checkRes -> {
           if (checkRes.failed()) {

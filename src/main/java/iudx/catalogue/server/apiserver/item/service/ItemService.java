@@ -1,8 +1,8 @@
-package iudx.catalogue.server.apiserver.Item.service;
+package iudx.catalogue.server.apiserver.item.service;
 
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
-import iudx.catalogue.server.apiserver.Item.model.Item;
+import iudx.catalogue.server.apiserver.item.model.Item;
 
 public interface ItemService {
   Future<JsonObject> createItem(Item item);

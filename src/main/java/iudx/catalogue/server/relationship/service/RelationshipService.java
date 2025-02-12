@@ -9,7 +9,7 @@ public interface RelationshipService {
    * type relationships operation with the database.
    *
    * @param request which is a JsonObject
-   * @return a {@link Future < JsonObject >}
+   * @return a Future<{@link io.vertx.core.json.JsonObject}>
    */
   Future<JsonObject> listRelationship(JsonObject request);
 
@@ -17,7 +17,7 @@ public interface RelationshipService {
    * The relSearch implements the Relationship searches with the database.
    *
    * @param request which is a JsonObject
-   * @return a {@link Future<JsonObject>}
+   * @return a Future<{@link io.vertx.core.json.JsonObject}>
    */
   Future<JsonObject> relSearch(JsonObject request);
 }

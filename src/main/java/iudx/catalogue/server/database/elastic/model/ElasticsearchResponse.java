@@ -5,9 +5,9 @@ import io.vertx.core.json.JsonObject;
 
 @DataObject(generateConverter = true)
 public class ElasticsearchResponse {
+  private static JsonObject aggregations;
   private String docId;
   private JsonObject source;
-  private static JsonObject aggregations;
 
   public ElasticsearchResponse() {
     // Default constructor
@@ -54,9 +54,6 @@ public class ElasticsearchResponse {
 
   @Override
   public String toString() {
-    return "ElasticsearchResponse{" +
-        "docId='" + docId + '\'' +
-        ", source=" + source +
-        '}';
+    return "ElasticsearchResponse{" + "docId='" + docId + '\'' + ", source=" + source + '}';
   }
 }

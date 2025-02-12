@@ -8,8 +8,8 @@ import com.nimbusds.jwt.proc.JWTProcessor;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
-import iudx.catalogue.server.authenticator.model.JwtData;
 import iudx.catalogue.server.authenticator.model.JwtAuthenticationInfo;
+import iudx.catalogue.server.authenticator.model.JwtData;
 import iudx.catalogue.server.util.Api;
 import java.util.Objects;
 import org.apache.logging.log4j.LogManager;
@@ -30,9 +30,9 @@ public class KcAuthenticationServiceImpl implements AuthenticationService {
   private static final Logger LOGGER = LogManager.getLogger(KcAuthenticationServiceImpl.class);
 
   final JWTProcessor<SecurityContext> jwtProcessor;
-  private Api api;
-  private String uacAdmin;
-  private String issuer;
+  private final Api api;
+  private final String uacAdmin;
+  private final String issuer;
 
   /**
    * Constructs a new instance of KcAuthenticationServiceImpl.
@@ -69,7 +69,7 @@ public class KcAuthenticationServiceImpl implements AuthenticationService {
   @Override
   public Future<JwtData> tokenIntrospect(
       JwtData decodedKc, JwtAuthenticationInfo authenticationInfo) {
-    Promise<JwtData>  promise = Promise.promise();
+    Promise<JwtData> promise = Promise.promise();
     String endpoint = authenticationInfo.getApiEndpoint();
     // String id = authenticationInfo.getId();
     String token = authenticationInfo.getToken();
@@ -80,8 +80,7 @@ public class KcAuthenticationServiceImpl implements AuthenticationService {
     result.jwtData = decodedKc;
 
     isValidIssuer(result.jwtData, issuer)
-        .compose(
-            validIssuer -> isValidEndpoint(endpoint))
+        .compose(validIssuer -> isValidEndpoint(endpoint))
         .compose(
             isValidEndpointHandler -> {
               // if the token is of UAC admin, bypass ownership, else verify ownership
@@ -114,9 +113,10 @@ public class KcAuthenticationServiceImpl implements AuthenticationService {
   Future<Boolean> isValidEndpoint(String endpoint) {
     Promise<Boolean> promise = Promise.promise();
 
-    if (endpoint.equals(api.getRouteItems()) || endpoint.equals(api.getRouteInstance())
-            || endpoint.equals(api.getRouteMlayerInstance())
-            || endpoint.equals(api.getRouteMlayerDomains())) {
+    if (endpoint.equals(api.getRouteItems())
+        || endpoint.equals(api.getRouteInstance())
+        || endpoint.equals(api.getRouteMlayerInstance())
+        || endpoint.equals(api.getRouteMlayerDomains())) {
       promise.complete(true);
     } else {
       LOGGER.error("Unauthorized access to endpoint {}", endpoint);

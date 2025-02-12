@@ -1,4 +1,4 @@
-package iudx.catalogue.server.apiserver.Item.model;
+package iudx.catalogue.server.apiserver.item.model;
 
 import static iudx.catalogue.server.util.Constants.UUID_PATTERN;
 

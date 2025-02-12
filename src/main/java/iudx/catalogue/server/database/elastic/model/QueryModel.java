@@ -48,8 +48,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * Represents a query model for constructing Elasticsearch searches, with support for
- * basic query types, boolean logic, filters, and aggregations.
+ * Represents a query model for constructing Elasticsearch searches, with support for basic query
+ * types, boolean logic, filters, and aggregations.
  */
 @DataObject(generateConverter = true, publicConverter = false)
 public class QueryModel {
@@ -91,7 +91,7 @@ public class QueryModel {
   /**
    * Constructor for creating a simple query (e.g., Match, Term).
    *
-   * @param queryType       the type of the query.
+   * @param queryType the type of the query.
    * @param queryParameters the parameters required for the query (e.g., field, value).
    */
   public QueryModel(QueryType queryType, Map<String, Object> queryParameters) {
@@ -103,7 +103,7 @@ public class QueryModel {
    * Constructor for creating a QueryModel with boolean sub-queries using BoolOperator.
    *
    * @param boolOperator the boolean operator (MUST, SHOULD, MUST_NOT, FILTER).
-   * @param subQueries   the list of sub-queries for this boolean operation.
+   * @param subQueries the list of sub-queries for this boolean operation.
    */
   public QueryModel(BoolOperator boolOperator, List<QueryModel> subQueries) {
     this.boolOperator = boolOperator;
@@ -129,15 +129,16 @@ public class QueryModel {
   /**
    * Constructor for creating a QueryModel with multiple types of boolean sub-queries.
    *
-   * @param mustQueries    List of queries to include in the MUST clause.
-   * @param shouldQueries  List of queries to include in the SHOULD clause.
+   * @param mustQueries List of queries to include in the MUST clause.
+   * @param shouldQueries List of queries to include in the SHOULD clause.
    * @param mustNotQueries List of queries to include in the MUST_NOT clause.
-   * @param filterQueries  List of queries to include in the FILTER clause.
+   * @param filterQueries List of queries to include in the FILTER clause.
    */
-  public QueryModel(List<QueryModel> mustQueries,
-                    List<QueryModel> shouldQueries,
-                    List<QueryModel> mustNotQueries,
-                    List<QueryModel> filterQueries) {
+  public QueryModel(
+      List<QueryModel> mustQueries,
+      List<QueryModel> shouldQueries,
+      List<QueryModel> mustNotQueries,
+      List<QueryModel> filterQueries) {
     this.queryType = QueryType.BOOL; // Set the type explicitly as BOOL
     this.mustQueries = mustQueries;
     this.shouldQueries = shouldQueries;
@@ -145,8 +146,7 @@ public class QueryModel {
     this.filterQueries = filterQueries;
   }
 
-  public QueryModel(AggregationType aggregationType,
-                    Map<String, Object> aggregationParameters) {
+  public QueryModel(AggregationType aggregationType, Map<String, Object> aggregationParameters) {
     this.aggregationType = aggregationType;
     this.aggregationParameters = aggregationParameters;
   }
@@ -156,8 +156,7 @@ public class QueryModel {
     this.aggregations = aggregations;
   }
 
-  public QueryModel() {
-  }
+  public QueryModel() {}
 
   public QueryModel(QueryType queryType) {
     this.queryType = queryType;
@@ -178,8 +177,7 @@ public class QueryModel {
     return aggregationType;
   }
 
-  public void setAggregationType(
-      AggregationType aggregationType) {
+  public void setAggregationType(AggregationType aggregationType) {
     this.aggregationType = aggregationType;
   }
 
@@ -187,11 +185,9 @@ public class QueryModel {
     return aggregationParameters;
   }
 
-  public void setAggregationParameters(
-      Map<String, Object> aggregationParameters) {
+  public void setAggregationParameters(Map<String, Object> aggregationParameters) {
     this.aggregationParameters = aggregationParameters;
   }
-
 
   public String getMinimumShouldMatch() {
     return minimumShouldMatch;
@@ -229,8 +225,7 @@ public class QueryModel {
     return subQueries;
   }
 
-  public void setSubQueries(
-      List<QueryModel> subQueries) {
+  public void setSubQueries(List<QueryModel> subQueries) {
     this.subQueries = subQueries;
   }
 
@@ -241,6 +236,7 @@ public class QueryModel {
   public void setAggregationsMap(Map<String, QueryModel> aggregationsMap) {
     this.aggregationsMap = aggregationsMap;
   }
+
   public void addAggregationsMap(Map<String, QueryModel> aggregationsMap) {
     this.aggregationsMap.putAll(aggregationsMap);
   }
@@ -272,8 +268,7 @@ public class QueryModel {
     return mustQueries;
   }
 
-  public void setMustQueries(
-      List<QueryModel> mustQueries) {
+  public void setMustQueries(List<QueryModel> mustQueries) {
     this.mustQueries = mustQueries;
   }
 
@@ -292,8 +287,7 @@ public class QueryModel {
     return shouldQueries;
   }
 
-  public void setShouldQueries(
-      List<QueryModel> shouldQueries) {
+  public void setShouldQueries(List<QueryModel> shouldQueries) {
     this.shouldQueries = shouldQueries;
   }
 
@@ -308,8 +302,7 @@ public class QueryModel {
     return mustNotQueries;
   }
 
-  public void setMustNotQueries(
-      List<QueryModel> mustNotQueries) {
+  public void setMustNotQueries(List<QueryModel> mustNotQueries) {
     this.mustNotQueries = mustNotQueries;
   }
 
@@ -402,13 +395,17 @@ public class QueryModel {
         case MATCH_ALL:
           return MatchAllQuery.of(m -> m)._toQuery();
         case MATCH:
-          return MatchQuery.of(m -> m
-              .field((String) queryParameters.get(FIELD))
-              .query(queryParameters.get(VALUE).toString()))._toQuery();
+          return MatchQuery.of(
+                  m ->
+                      m.field((String) queryParameters.get(FIELD))
+                          .query(queryParameters.get(VALUE).toString()))
+              ._toQuery();
         case TERM:
-          return TermQuery.of(t -> t
-              .field((String) queryParameters.get(FIELD))
-              .value(queryParameters.get(VALUE).toString()))._toQuery();
+          return TermQuery.of(
+                  t ->
+                      t.field((String) queryParameters.get(FIELD))
+                          .value(queryParameters.get(VALUE).toString()))
+              ._toQuery();
         case TERMS:
           // Ensure the value is a List<String>
           List<String> termsValues;
@@ -418,41 +415,53 @@ public class QueryModel {
             termsValues = List.of((String) queryParameters.get(VALUE));
           }
           // Convert the list to FieldValue and wrap in TermsQueryField
-          TermsQueryField termsQueryField = new TermsQueryField.Builder()
-              .value(termsValues.stream().map(FieldValue::of).collect(Collectors.toList()))
-              .build();
+          TermsQueryField termsQueryField =
+              new TermsQueryField.Builder()
+                  .value(termsValues.stream().map(FieldValue::of).collect(Collectors.toList()))
+                  .build();
 
-          return TermsQuery.of(t -> t
-                  .field((String) queryParameters.get(FIELD))
-                  .terms(termsQueryField))
+          return TermsQuery.of(
+                  t -> t.field((String) queryParameters.get(FIELD)).terms(termsQueryField))
               ._toQuery();
         case BOOL:
-          return BoolQuery.of(b -> {
-            if (this.mustQueries != null) {
-              b.must(this.mustQueries.stream().map(QueryModel::toElasticsearchQuery)
-                  .collect(Collectors.toList()));
-            }
-            if (this.shouldQueries != null) {
-              b.should(this.shouldQueries.stream().map(QueryModel::toElasticsearchQuery)
-                  .collect(Collectors.toList()));
-            }
-            if (this.minimumShouldMatch != null) {
-              b.minimumShouldMatch(this.minimumShouldMatch);
-            }
-            if (this.mustNotQueries != null) {
-              b.mustNot(this.mustNotQueries.stream().map(QueryModel::toElasticsearchQuery)
-                  .collect(Collectors.toList()));
-            }
-            if (this.filterQueries != null) {
-              b.filter(this.filterQueries.stream().map(QueryModel::toElasticsearchQuery)
-                  .collect(Collectors.toList()));
-            }
-            return b;
-          })._toQuery();
+          return BoolQuery.of(
+                  b -> {
+                    if (this.mustQueries != null) {
+                      b.must(
+                          this.mustQueries.stream()
+                              .map(QueryModel::toElasticsearchQuery)
+                              .collect(Collectors.toList()));
+                    }
+                    if (this.shouldQueries != null) {
+                      b.should(
+                          this.shouldQueries.stream()
+                              .map(QueryModel::toElasticsearchQuery)
+                              .collect(Collectors.toList()));
+                    }
+                    if (this.minimumShouldMatch != null) {
+                      b.minimumShouldMatch(this.minimumShouldMatch);
+                    }
+                    if (this.mustNotQueries != null) {
+                      b.mustNot(
+                          this.mustNotQueries.stream()
+                              .map(QueryModel::toElasticsearchQuery)
+                              .collect(Collectors.toList()));
+                    }
+                    if (this.filterQueries != null) {
+                      b.filter(
+                          this.filterQueries.stream()
+                              .map(QueryModel::toElasticsearchQuery)
+                              .collect(Collectors.toList()));
+                    }
+                    return b;
+                  })
+              ._toQuery();
         case WILDCARD:
-          return WildcardQuery.of(w -> w
-              .field((String) queryParameters.get(FIELD))
-              .value((String) queryParameters.get(VALUE)))._toQuery();
+          return WildcardQuery.of(
+                  w ->
+                      w.field((String) queryParameters.get(FIELD))
+                          .value((String) queryParameters.get(VALUE)))
+              ._toQuery();
         case GEO_BOUNDING_BOX:
           return GeoBoundingBoxQuery.of(g -> g
               .field((String) queryParameters.get(FIELD))
@@ -485,9 +494,8 @@ public class QueryModel {
           return QueryBuilders.geoShape(
               g -> g.field((String) queryParameters.get(GEOPROPERTY)).shape(geoShapeFieldQuery));
         case TEXT:
-          return QueryStringQuery.of(qs -> qs
-              .query(queryParameters.get(Q_VALUE).toString())
-          )._toQuery();
+          return QueryStringQuery.of(qs -> qs.query(queryParameters.get(Q_VALUE).toString()))
+              ._toQuery();
         case SCRIPT_SCORE:
           // Add the script_score query here
           JsonArray queryVector = (JsonArray) queryParameters.get("query_vector");
@@ -501,7 +509,7 @@ public class QueryModel {
           if (queryParameters.get("custom_query") != null) {
             customQueryModel =
                 new QueryModel(JsonObject.mapFrom(queryParameters.get("custom_query")));
-            }
+          }
           Query baseQuery = (customQueryModel != null)
               ? customQueryModel.toElasticsearchQuery()
               : MatchAllQuery.of(m -> m)._toQuery();
@@ -515,24 +523,27 @@ public class QueryModel {
                   .params(params))
           )._toQuery();
         case QUERY_STRING:
-          return QueryStringQuery.of(qs -> {
-            qs.query(queryParameters.get("query").toString());
-            if (queryParameters.containsKey("default_field")) {
-              qs.defaultField(queryParameters.get("default_field").toString());
-            }
-            if (queryParameters.containsKey("fields")) {
-              List<String> fields = (List<String>) queryParameters.get("fields");
-              qs.fields(fields);
-            }
-            if (queryParameters.containsKey("analyzer")) {
-              qs.analyzer(queryParameters.get("analyzer").toString());
-            }
-            if (queryParameters.containsKey("default_operator")) {
-              String operator = queryParameters.get("default_operator").toString().toUpperCase();
-              qs.defaultOperator(Operator.valueOf(operator));
-            }
-            return qs;
-          })._toQuery();
+          return QueryStringQuery.of(
+                  qs -> {
+                    qs.query(queryParameters.get("query").toString());
+                    if (queryParameters.containsKey("default_field")) {
+                      qs.defaultField(queryParameters.get("default_field").toString());
+                    }
+                    if (queryParameters.containsKey("fields")) {
+                      List<String> fields = (List<String>) queryParameters.get("fields");
+                      qs.fields(fields);
+                    }
+                    if (queryParameters.containsKey("analyzer")) {
+                      qs.analyzer(queryParameters.get("analyzer").toString());
+                    }
+                    if (queryParameters.containsKey("default_operator")) {
+                      String operator =
+                          queryParameters.get("default_operator").toString().toUpperCase();
+                      qs.defaultOperator(Operator.valueOf(operator));
+                    }
+                    return qs;
+                  })
+              ._toQuery();
 
         default:
           throw new UnsupportedOperationException("Query type not supported: " + this.queryType);
@@ -541,7 +552,6 @@ public class QueryModel {
       LOGGER.error("Error while creating Elasticsearch Query for QueryModel: {}", this.toJson(), e);
       throw new RuntimeException("Failed to convert QueryModel to Elasticsearch Query", e);
     }
-
   }
 
   /**
@@ -552,12 +562,13 @@ public class QueryModel {
   public Aggregation toElasticsearchAggregations() {
     // Validate the aggregation type and parameters
     if (this.aggregationType == null || this.aggregationParameters == null) {
-      LOGGER.error("Aggregation type or parameters missing. Aggregation cannot be created for: " + this.toJson());
+      LOGGER.error(
+          "Aggregation type or parameters missing. Aggregation cannot be created for: "
+              + this.toJson());
       throw new IllegalArgumentException("Invalid aggregation configuration");
     }
     return AggregationFactory.createAggregation(this);
   }
-
 
   /**
    * Converts this QueryModel's source configuration into Elasticsearch SourceConfig object.
@@ -566,35 +577,38 @@ public class QueryModel {
    */
   public SourceConfig toSourceConfig() {
     if (includeFields != null && excludeFields != null) {
-      return SourceConfig.of(s -> s
-          .filter(f -> f.includes(includeFields).excludes(excludeFields)));
+      return SourceConfig.of(s -> s.filter(f -> f.includes(includeFields).excludes(excludeFields)));
     } else if (includeFields != null) {
       return SourceConfig.of(s -> s.filter(f -> f.includes(includeFields)));
     } else if (excludeFields != null) {
       return SourceConfig.of(s -> s.filter(f -> f.excludes(excludeFields)));
     }
-    return null;  // Returns null if there are no field inclusion/exclusion rules
+    return null; // Returns null if there are no field inclusion/exclusion rules
   }
 
   /**
-   * Converts this QueryModel's sorting configuration into a list of Elasticsearch SortOptions objects.
+   * Converts this QueryModel's sorting configuration into a list of Elasticsearch SortOptions
+   * objects.
    *
    * @return List of Elasticsearch SortOptions objects.
    */
   public List<SortOptions> toSortOptions() {
     if (sortFields == null || sortFields.isEmpty()) {
-      return null;  // Returns null if there are no sorting rules
+      return null; // Returns null if there are no sorting rules
     }
 
     return sortFields.entrySet().stream()
-        .map(entry -> SortOptions.of(s ->
-            s.field(f ->
-                f.field(entry.getKey())
-                    .order(
-                        "asc".equalsIgnoreCase(entry.getValue()) ? SortOrder.Asc : SortOrder.Desc)
-            )
-        ))
+        .map(
+            entry ->
+                SortOptions.of(
+                    s ->
+                        s.field(
+                            f ->
+                                f.field(entry.getKey())
+                                    .order(
+                                        "asc".equalsIgnoreCase(entry.getValue())
+                                            ? SortOrder.Asc
+                                            : SortOrder.Desc))))
         .collect(Collectors.toList());
   }
-
 }
