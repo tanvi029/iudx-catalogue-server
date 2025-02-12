@@ -20,7 +20,6 @@ public class Constants {
   public static final String AUDITING_SERVICE_ADDRESS = "iudx.catalogue.auditing.service";
   public static final String RATING_SERVICE_ADDRESS = "iudx.catalogue.rating.service";
   public static final String MLAYER_SERVICE_ADDRESS = "iudx.catalogue.mlayer.service";
-  public static final String BROKER_SERVICE_ADDRESS = "iudx.catalogue.databroker.service";
   public static final String RMQ_SERVICE_ADDRESS = "iudx.catalogue.rabbitmq.service";
   public static final String PG_SERVICE_ADDRESS = "iudx.catalogue.pgsql.service";
 

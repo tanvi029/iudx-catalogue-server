@@ -1,9 +1,9 @@
 package iudx.catalogue.server.rating;
 
-import static iudx.catalogue.server.util.Constants.BROKER_SERVICE_ADDRESS;
 import static iudx.catalogue.server.util.Constants.ELASTIC_SERVICE_ADDRESS;
 import static iudx.catalogue.server.util.Constants.PG_SERVICE_ADDRESS;
 import static iudx.catalogue.server.util.Constants.RATING_SERVICE_ADDRESS;
+import static iudx.catalogue.server.util.Constants.RMQ_SERVICE_ADDRESS;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.MessageConsumer;
@@ -58,7 +58,7 @@ public class RatingVerticle extends AbstractVerticle {
     docIndex = config().getString("docIndex");
 
     elasticsearchService = ElasticsearchService.createProxy(vertx, ELASTIC_SERVICE_ADDRESS);
-    rmqService = RabbitMQService.createProxy(vertx, BROKER_SERVICE_ADDRESS);
+    rmqService = RabbitMQService.createProxy(vertx, RMQ_SERVICE_ADDRESS);
     postgresService = PostgresService.createProxy(vertx, PG_SERVICE_ADDRESS);
 
     binder = new ServiceBinder(vertx);
