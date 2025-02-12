@@ -183,7 +183,7 @@ public class ApiServerVerticle extends AbstractVerticle {
             failureHandler,
             dxApiBasePath,
             docIndex);
-    MlayerService mlayerService = MlayerService.createProxy(vertx, MLAYER_SERVICE_ADDRESSS);
+    MlayerService mlayerService = MlayerService.createProxy(vertx, MLAYER_SERVICE_ADDRESS);
     mlayerController =
         new MlayerController(
             config().getString(HOST),

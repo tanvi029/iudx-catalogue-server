@@ -13,14 +13,13 @@ public class Constants {
 
   /** Service Addresses. */
   public static final String ELASTIC_SERVICE_ADDRESS = "iudx.catalogue.elastic.service";
-  public static final String DATABASE_SERVICE_ADDRESS = "iudx.catalogue.database.service";
   public static final String AUTH_SERVICE_ADDRESS = "iudx.catalogue.authentication.service";
   public static final String VALIDATION_SERVICE_ADDRESS = "iudx.catalogue.validator.service";
   public static final String GEOCODING_SERVICE_ADDRESS = "iudx.catalogue.geocoding.service";
   public static final String NLP_SERVICE_ADDRESS = "iudx.catalogue.nlpsearch.service";
   public static final String AUDITING_SERVICE_ADDRESS = "iudx.catalogue.auditing.service";
   public static final String RATING_SERVICE_ADDRESS = "iudx.catalogue.rating.service";
-  public static final String MLAYER_SERVICE_ADDRESSS = "iudx.catalogue.mlayer.service";
+  public static final String MLAYER_SERVICE_ADDRESS = "iudx.catalogue.mlayer.service";
   public static final String BROKER_SERVICE_ADDRESS = "iudx.catalogue.databroker.service";
   public static final String RMQ_SERVICE_ADDRESS = "iudx.catalogue.rabbitmq.service";
   public static final String PG_SERVICE_ADDRESS = "iudx.catalogue.pgsql.service";

@@ -1,5 +1,7 @@
 package iudx.catalogue.server.databroker;
 
+import static iudx.catalogue.server.util.Constants.RMQ_SERVICE_ADDRESS;
+
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
@@ -21,7 +23,6 @@ import iudx.catalogue.server.databroker.service.RabbitMQServiceImpl;
  * @since 2024-08-02
  */
 public class RabbitMQVerticle extends AbstractVerticle {
-  public static final String RMQ_SERVICE_ADDRESS = "iudx.catalogue.rabbitmq.service";
   private RabbitMQService rabbitMQService;
   private RabbitMQOptions options;
   private RabbitMQClient client;

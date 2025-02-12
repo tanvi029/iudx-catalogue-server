@@ -3,6 +3,7 @@ package iudx.catalogue.server.rating;
 import static iudx.catalogue.server.util.Constants.BROKER_SERVICE_ADDRESS;
 import static iudx.catalogue.server.util.Constants.ELASTIC_SERVICE_ADDRESS;
 import static iudx.catalogue.server.util.Constants.PG_SERVICE_ADDRESS;
+import static iudx.catalogue.server.util.Constants.RATING_SERVICE_ADDRESS;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.MessageConsumer;
@@ -26,8 +27,6 @@ import org.apache.logging.log4j.Logger;
  * @since 2022-05-30
  */
 public class RatingVerticle extends AbstractVerticle {
-
-  private static final String RATING_SERVICE_ADDRESS = "iudx.catalogue.rating.service";
   private static final Logger LOGGER = LogManager.getLogger(RatingVerticle.class);
 
   ElasticsearchService elasticsearchService;

@@ -1,6 +1,7 @@
 package iudx.catalogue.server.mlayer;
 
 import static iudx.catalogue.server.util.Constants.ELASTIC_SERVICE_ADDRESS;
+import static iudx.catalogue.server.util.Constants.MLAYER_SERVICE_ADDRESS;
 import static iudx.catalogue.server.util.Constants.PG_SERVICE_ADDRESS;
 
 import io.vertx.core.AbstractVerticle;
@@ -18,7 +19,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class MlayerVerticle extends AbstractVerticle {
-  private static final String MLAYER_SERVICE_ADDRESS = "iudx.catalogue.mlayer.service";
   private static final Logger LOGGER = LogManager.getLogger(MlayerVerticle.class);
   ElasticsearchService elasticsearchService;
   PostgresService postgresService;
