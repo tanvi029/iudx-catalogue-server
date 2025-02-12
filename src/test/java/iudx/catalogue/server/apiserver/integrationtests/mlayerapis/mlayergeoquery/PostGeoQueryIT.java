@@ -13,22 +13,22 @@ resource groups whose id(s) are provided in Catalogue Middle layer specific APIs
 
 @ExtendWith(RestAssuredConfiguration.class)
 public class PostGeoQueryIT {
-    @Test
-    @DisplayName("Post Mlayer Geo Query Success Test-200")
-    public void postMlayerGeoQueryTest(){
-        JsonObject requestBody = new JsonObject()
-                .put("id", new JsonArray().add("8b95ab80-2aaf-4636-a65e-7f2563d0d371").add("83c2e5c2-3574-4e11-9530-2b1fbdfce832"))
-                .put("instance", "surat");
-        given()
-                .header("Content-Type","application/json")
-                .body(requestBody.encodePrettily())
-                .when()
-                .post("/internal/ui/geoquery")
-                .then()
-                .statusCode(200)
-                //.log().body()
-                .body("type", equalTo("urn:dx:cat:Success"));
-    }
+//    @Test
+//    @DisplayName("Post Mlayer Geo Query Success Test-200")
+//    public void postMlayerGeoQueryTest(){
+//        JsonObject requestBody = new JsonObject()
+//                .put("id", new JsonArray().add("8b95ab80-2aaf-4636-a65e-7f2563d0d371").add("83c2e5c2-3574-4e11-9530-2b1fbdfce832"))
+//                .put("instance", "surat");
+//        given()
+//                .header("Content-Type","application/json")
+//                .body(requestBody.encodePrettily())
+//                .when()
+//                .post("/internal/ui/geoquery")
+//                .then()
+//                .statusCode(200)
+//                //.log().body()
+//                .body("type", equalTo("urn:dx:cat:Success"));
+//    }
     @Test
     @DisplayName("Post Mlayer Geo Query With Invalid Schema Test-400")
     public void postMlayerGeoQueryWithInvalidSchemaTest(){

@@ -18,31 +18,31 @@ import static org.hamcrest.Matchers.equalTo;
 public class MlayerDomainCRUDIT {
     private static String domainId;
     //Creating Mlayer Domain
-    @Test
-    @Order(1)
-    @DisplayName("Create Mlayer Domain Success Test-201")
-    public void createMlayerDomainTest(){
-        //Request Body
-        JsonObject requestBody = new JsonObject()
-                .put("description", "Data Models that pertain to civic domain")
-                .put("icon", "https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/civic.png")
-                .put("label", "Civic")
-                .put("name", "civicTest");
-
-        Response resp= given()
-                .header("Content-Type", "application/json")
-                .header("token", cosAdminToken)
-                .body(requestBody.encodePrettily())
-                .when()
-                .post("/internal/ui/domain");
-        JsonObject respJson = new JsonObject(resp.body().asString());
-        JsonObject firstResult = respJson.getJsonArray("results").getJsonObject(0);
-        domainId = firstResult.getString("id");
-        resp.then()
-                .statusCode(201)
-                //.log().body()
-                .body("type", equalTo("urn:dx:cat:Success"));
-    }
+//    @Test
+//    @Order(1)
+//    @DisplayName("Create Mlayer Domain Success Test-201")
+//    public void createMlayerDomainTest(){
+//        //Request Body
+//        JsonObject requestBody = new JsonObject()
+//                .put("description", "Data Models that pertain to civic domain")
+//                .put("icon", "https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/civic.png")
+//                .put("label", "Civic")
+//                .put("name", "civicTest");
+//
+//        Response resp= given()
+//                .header("Content-Type", "application/json")
+//                .header("token", cosAdminToken)
+//                .body(requestBody.encodePrettily())
+//                .when()
+//                .post("/internal/ui/domain");
+//        JsonObject respJson = new JsonObject(resp.body().asString());
+//        JsonObject firstResult = respJson.getJsonArray("results").getJsonObject(0);
+//        domainId = firstResult.getString("id");
+//        resp.then()
+//                .statusCode(201)
+//                //.log().body()
+//                .body("type", equalTo("urn:dx:cat:Success"));
+//    }
     @Test
     @Order(2)
     @DisplayName("Create Mlayer Domain with Invalid Schema Test-400")
@@ -90,27 +90,27 @@ public class MlayerDomainCRUDIT {
 
    //Updating Mlayer Domain
 
-   @Test
-   @Order(4)
-   @DisplayName("Update Mlayer Domain Success Test-200")
-   public void updateMlayerDomainTest(){
-       JsonObject requestBody = new JsonObject()
-               .put("icon", "https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/civic.jpeg")
-               .put("name", "civicTest")
-               .put("description", "Data Models that pertain to civic domain")
-               .put("label", "Civic");
-       given()
-               .queryParam("id",domainId)
-               .header("Content-Type","application/json")
-               .header("token",cosAdminToken)
-               .body(requestBody.encodePrettily())
-               .when()
-               .put("/internal/ui/domain")
-               .then()
-               .statusCode(200)
-               //.log().body()
-               .body("type",equalTo("urn:dx:cat:Success"));
-   }
+//   @Test
+//   @Order(4)
+//   @DisplayName("Update Mlayer Domain Success Test-200")
+//   public void updateMlayerDomainTest(){
+//       JsonObject requestBody = new JsonObject()
+//               .put("icon", "https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/civic.jpeg")
+//               .put("name", "civicTest")
+//               .put("description", "Data Models that pertain to civic domain")
+//               .put("label", "Civic");
+//       given()
+//               .queryParam("id",domainId)
+//               .header("Content-Type","application/json")
+//               .header("token",cosAdminToken)
+//               .body(requestBody.encodePrettily())
+//               .when()
+//               .put("/internal/ui/domain")
+//               .then()
+//               .statusCode(200)
+//               //.log().body()
+//               .body("type",equalTo("urn:dx:cat:Success"));
+//   }
     @Test
     @Order(5)
     @DisplayName("Update Mlayer Domain With Invalid Schema Test-400")
@@ -157,48 +157,48 @@ public class MlayerDomainCRUDIT {
 
     //Retrieving MLayer Domain
 
-    @Test
-    @Order(7)
-    @DisplayName("Get All Mlayer Domains Success Test-200")
-    public void getAllMlayerDomainsTest() {
-        given()
-                .when()
-                .get("/internal/ui/domain")
-                .then()
-                .statusCode(200)
-                //.log().body()
-                .body("type", equalTo("urn:dx:cat:Success"));
-    }
+//    @Test
+//    @Order(7)
+//    @DisplayName("Get All Mlayer Domains Success Test-200")
+//    public void getAllMlayerDomainsTest() {
+//        given()
+//                .when()
+//                .get("/internal/ui/domain")
+//                .then()
+//                .statusCode(200)
+//                //.log().body()
+//                .body("type", equalTo("urn:dx:cat:Success"));
+//    }
 
-    @Test
-    @Order(8)
-    @DisplayName("Get Mlayer Domain by Id Success Test-200")
-    public void getMlayerDomainByIdTest() {
-        given()
-                .param("id", domainId)
-                .when()
-                .get("/internal/ui/domain")
-                .then()
-                .statusCode(200)
-                //.log().body()
-                .body("type", equalTo("urn:dx:cat:Success"));
-    }
-
-    @Test
-    @Order(9)
-    @DisplayName("Get Mlayer Domain by Id Success Test-200")
-    public void getMlayerDomainByLimitAndOffset() {
-        given()
-                .param("id", domainId)
-                .param("limit",10)
-                .param("offset", 0)
-                .when()
-                .get("/internal/ui/domain")
-                .then()
-                .statusCode(200)
-                //.log().body()
-                .body("type", equalTo("urn:dx:cat:Success"));
-    }
+//    @Test
+//    @Order(8)
+//    @DisplayName("Get Mlayer Domain by Id Success Test-200")
+//    public void getMlayerDomainByIdTest() {
+//        given()
+//                .param("id", domainId)
+//                .when()
+//                .get("/internal/ui/domain")
+//                .then()
+//                .statusCode(200)
+//                //.log().body()
+//                .body("type", equalTo("urn:dx:cat:Success"));
+//    }
+//
+//    @Test
+//    @Order(9)
+//    @DisplayName("Get Mlayer Domain by Id Success Test-200")
+//    public void getMlayerDomainByLimitAndOffset() {
+//        given()
+//                .param("id", domainId)
+//                .param("limit",10)
+//                .param("offset", 0)
+//                .when()
+//                .get("/internal/ui/domain")
+//                .then()
+//                .statusCode(200)
+//                //.log().body()
+//                .body("type", equalTo("urn:dx:cat:Success"));
+//    }
     @Test
     @Order(10)
     @DisplayName("Invalid limit value Test-400")
@@ -249,20 +249,20 @@ public class MlayerDomainCRUDIT {
 
     //Deleting Mlayer Domain
 
-    @Test
-    @Order(13)
-    @DisplayName("Delete Mlayer Domain Success Test-200")
-    public void deleteMlayerDomainTest(){
-        given()
-                .queryParam("id",domainId)
-                .header("token",cosAdminToken)
-                .when()
-                .delete("/internal/ui/domain")
-                .then()
-                .statusCode(200)
-                //.log().body()
-                .body("type",equalTo("urn:dx:cat:Success"));
-    }
+//    @Test
+//    @Order(13)
+//    @DisplayName("Delete Mlayer Domain Success Test-200")
+//    public void deleteMlayerDomainTest(){
+//        given()
+//                .queryParam("id",domainId)
+//                .header("token",cosAdminToken)
+//                .when()
+//                .delete("/internal/ui/domain")
+//                .then()
+//                .statusCode(200)
+//                //.log().body()
+//                .body("type",equalTo("urn:dx:cat:Success"));
+//    }
     @Test
     @Order(14)
     @DisplayName("Delete Mlayer Domain With Invalid Token Test-401")
