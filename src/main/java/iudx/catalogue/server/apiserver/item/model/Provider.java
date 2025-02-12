@@ -49,59 +49,60 @@ public class Provider implements Item {
 
   private void validateFields() {
     if (!id.toString().matches(UUID_REGEX)) {
-      throw new IllegalArgumentException(String.format(
-          "[ECMA 262 regex \"%s\" does not match input string \"%s\"]",
-          UUID_REGEX, id
-      ));
+      throw new IllegalArgumentException(
+          String.format(
+              "[ECMA 262 regex \"%s\" does not match input string \"%s\"]", UUID_REGEX, id));
     }
     if (name == null) {
       throw new IllegalArgumentException("[object has missing required properties ([\"name\"])])");
     }
     if (description == null) {
-      throw new IllegalArgumentException("[object has missing required properties ([\"description\"])])");
+      throw new IllegalArgumentException(
+          "[object has missing required properties ([\"description\"])])");
     }
     if (!name.matches(NAME_REGEX)) {
-      throw new IllegalArgumentException(String.format(
-          "[ECMA 262 regex \"%s\" does not match input string \"%s\"]",
-          NAME_REGEX, name
-      ));
+      throw new IllegalArgumentException(
+          String.format(
+              "[ECMA 262 regex \"%s\" does not match input string \"%s\"]", NAME_REGEX, name));
     }
     if (providerOrg == null) {
       throw new IllegalArgumentException(
           "[object has missing required properties ([\"providerOrg\"])])");
     }
     if (ownerUserId == null) {
-      throw new IllegalArgumentException("[object has missing required properties ([\"ownerUserId\"])])");
+      throw new IllegalArgumentException(
+          "[object has missing required properties ([\"ownerUserId\"])])");
     }
     if (!ownerUserId.toString().matches(UUID_REGEX)) {
-      throw new IllegalArgumentException(String.format(
-          "[ECMA 262 regex \"%s\" does not match input string \"%s\"]",
-          UUID_REGEX, ownerUserId
-      ));
+      throw new IllegalArgumentException(
+          String.format(
+              "[ECMA 262 regex \"%s\" does not match input string \"%s\"]",
+              UUID_REGEX, ownerUserId));
     }
     if (resourceServer == null) {
-      throw new IllegalArgumentException("[object has missing required properties ([\"resourceServer\"])])");
+      throw new IllegalArgumentException(
+          "[object has missing required properties ([\"resourceServer\"])])");
     }
     if (!resourceServer.toString().matches(UUID_REGEX)) {
-      throw new IllegalArgumentException(String.format(
-          "[ECMA 262 regex \"%s\" does not match input string \"%s\"]",
-          UUID_REGEX, resourceServer
-      ));
+      throw new IllegalArgumentException(
+          String.format(
+              "[ECMA 262 regex \"%s\" does not match input string \"%s\"]",
+              UUID_REGEX, resourceServer));
     }
   }
 
   // Utility method to parse and validate UUIDs
   private UUID parseUUID(String value, String fieldName) {
     if (value == null) {
-      throw new IllegalArgumentException("[object has missing required properties ([\"" + fieldName + "\"])])");
+      throw new IllegalArgumentException(
+          "[object has missing required properties ([\"" + fieldName + "\"])])");
     }
     try {
       return UUID.fromString(value);
     } catch (IllegalArgumentException e) {
-      throw new IllegalArgumentException(String.format(
-          "[ECMA 262 regex \"%s\" does not match input string \"%s\"]",
-          UUID_REGEX, value
-      ));
+      throw new IllegalArgumentException(
+          String.format(
+              "[ECMA 262 regex \"%s\" does not match input string \"%s\"]", UUID_REGEX, value));
     }
   }
 
@@ -214,6 +215,7 @@ public class Provider implements Item {
   public void setCos(String cos) {
     this.cos = cos;
   }
+
   public JsonObject getRequestJson() {
     return requestJson;
   }
@@ -265,13 +267,16 @@ public class Provider implements Item {
 
     private void validateProviderOrgFields() {
       if (name == null) {
-        throw new IllegalArgumentException("[object has missing required properties ([\"name\"])])");
+        throw new IllegalArgumentException(
+            "[object has missing required properties ([\"name\"])])");
       }
       if (additionalInfoURL == null) {
-        throw new IllegalArgumentException("[object has missing required properties ([\"additionalInfoURL\"])])");
+        throw new IllegalArgumentException(
+            "[object has missing required properties ([\"additionalInfoURL\"])])");
       }
       if (location == null) {
-        throw new IllegalArgumentException("[object has missing required properties ([\"location\"])])");
+        throw new IllegalArgumentException(
+            "[object has missing required properties ([\"location\"])])");
       }
     }
 
@@ -330,13 +335,16 @@ public class Provider implements Item {
 
     private void validateLocationFields() {
       if (type == null) {
-        throw new IllegalArgumentException("[object has missing required properties ([\"type\"])])");
+        throw new IllegalArgumentException(
+            "[object has missing required properties ([\"type\"])])");
       }
       if (address == null) {
-        throw new IllegalArgumentException("[object has missing required properties ([\"address\"])])");
+        throw new IllegalArgumentException(
+            "[object has missing required properties ([\"address\"])])");
       }
       if (geometry == null) {
-        throw new IllegalArgumentException("[object has missing required properties ([\"geometry\"])])");
+        throw new IllegalArgumentException(
+            "[object has missing required properties ([\"geometry\"])])");
       }
     }
 
@@ -390,10 +398,12 @@ public class Provider implements Item {
 
     private void validateGeometryFields() {
       if (type == null) {
-        throw new IllegalArgumentException("[object has missing required properties ([\"type\"])])");
+        throw new IllegalArgumentException(
+            "[object has missing required properties ([\"type\"])])");
       }
       if (coordinates == null) {
-        throw new IllegalArgumentException("[object has missing required properties ([\"coordinates\"])])");
+        throw new IllegalArgumentException(
+            "[object has missing required properties ([\"coordinates\"])])");
       }
     }
 

@@ -50,67 +50,69 @@ public class Resource implements Item {
 
   private void validateFields() {
     if (!id.toString().matches(UUID_REGEX)) {
-      throw new IllegalArgumentException(String.format(
-          "[ECMA 262 regex \"%s\" does not match input string \"%s\"]",
-          UUID_REGEX, id
-      ));
+      throw new IllegalArgumentException(
+          String.format(
+              "[ECMA 262 regex \"%s\" does not match input string \"%s\"]", UUID_REGEX, id));
     }
     if (name == null) {
       throw new IllegalArgumentException("[object has missing required properties ([\"name\"])])");
     }
     if (description == null) {
-      throw new IllegalArgumentException("[object has missing required properties ([\"description\"])])");
+      throw new IllegalArgumentException(
+          "[object has missing required properties ([\"description\"])])");
     }
     if (!name.matches(NAME_REGEX)) {
-      throw new IllegalArgumentException(String.format(
-          "[ECMA 262 regex \"%s\" does not match input string \"%s\"]",
-          NAME_REGEX, name
-      ));
+      throw new IllegalArgumentException(
+          String.format(
+              "[ECMA 262 regex \"%s\" does not match input string \"%s\"]", NAME_REGEX, name));
     }
     if (tags == null) {
       throw new IllegalArgumentException("[object has missing required properties ([\"tags\"])])");
     }
     if (provider == null) {
-      throw new IllegalArgumentException("[object has missing required properties ([\"provider\"])])");
+      throw new IllegalArgumentException(
+          "[object has missing required properties ([\"provider\"])])");
     }
     if (!provider.matches(UUID_REGEX)) {
-      throw new IllegalArgumentException(String.format(
-          "[ECMA 262 regex \"%s\" does not match input string \"%s\"]",
-          UUID_REGEX, provider
-      ));
+      throw new IllegalArgumentException(
+          String.format(
+              "[ECMA 262 regex \"%s\" does not match input string \"%s\"]", UUID_REGEX, provider));
     }
     if (resourceGroup == null) {
-      throw new IllegalArgumentException("[object has missing required properties ([\"resourceGroup\"])])");
+      throw new IllegalArgumentException(
+          "[object has missing required properties ([\"resourceGroup\"])])");
     }
     if (!resourceGroup.matches(UUID_REGEX)) {
-      throw new IllegalArgumentException(String.format(
-          "[ECMA 262 regex \"%s\" does not match input string \"%s\"]",
-          UUID_REGEX, resourceGroup
-      ));
+      throw new IllegalArgumentException(
+          String.format(
+              "[ECMA 262 regex \"%s\" does not match input string \"%s\"]",
+              UUID_REGEX, resourceGroup));
     }
     if (resourceServer == null) {
-      throw new IllegalArgumentException("[object has missing required properties ([\"resourceServer\"])])");
+      throw new IllegalArgumentException(
+          "[object has missing required properties ([\"resourceServer\"])])");
     }
     if (!resourceServer.matches(UUID_REGEX)) {
-      throw new IllegalArgumentException(String.format(
-          "[ECMA 262 regex \"%s\" does not match input string \"%s\"]",
-          UUID_REGEX, resourceServer
-      ));
+      throw new IllegalArgumentException(
+          String.format(
+              "[ECMA 262 regex \"%s\" does not match input string \"%s\"]",
+              UUID_REGEX, resourceServer));
     }
     if (apdURL == null) {
-      throw new IllegalArgumentException("[object has missing required properties ([\"apdURL\"])])");
+      throw new IllegalArgumentException(
+          "[object has missing required properties ([\"apdURL\"])])");
     }
     if (accessPolicy == null) {
-      throw new IllegalArgumentException("[object has missing required properties ([\"accessPolicy\"])])");
+      throw new IllegalArgumentException(
+          "[object has missing required properties ([\"accessPolicy\"])])");
     }
     if (!accessPolicy.matches(ACCESS_POLICY_REGEX)) {
-      throw new IllegalArgumentException(String.format(
-          "[ECMA 262 regex \"%s\" does not match input string \"%s\"]",
-          UUID_REGEX, resourceServer
-      ));
+      throw new IllegalArgumentException(
+          String.format(
+              "[ECMA 262 regex \"%s\" does not match input string \"%s\"]",
+              UUID_REGEX, resourceServer));
     }
   }
-
 
   @Override
   public UUID getId() {
@@ -230,7 +232,6 @@ public class Resource implements Item {
     this.resourceServer = resourceServer;
   }
 
-
   public String getApdURL() {
     return apdURL;
   }
@@ -246,6 +247,7 @@ public class Resource implements Item {
   public void setAccessPolicy(String accessPolicy) {
     this.accessPolicy = accessPolicy;
   }
+
   public JsonObject getRequestJson() {
     return requestJson;
   }
@@ -278,5 +280,4 @@ public class Resource implements Item {
     }
     return json;
   }
-
 }

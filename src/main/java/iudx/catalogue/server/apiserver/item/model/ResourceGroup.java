@@ -1,41 +1,51 @@
 package iudx.catalogue.server.apiserver.Item.model;
 
+import static iudx.catalogue.server.util.Constants.UUID_PATTERN;
+
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import java.util.List;
 import java.util.UUID;
 
-public class Owner implements Item {
-  private static final String ID_REGEX =
-      "^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$";
+public class ResourceGroup implements Item {
+
   private static final String NAME_REGEX = "^[a-zA-Z0-9]([\\w-]*[a-zA-Z0-9 ])?$";
+  private static final String PROVIDER_REGEX =
+      "^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$";
   private final JsonObject requestJson;
+  private String provider;
   private UUID id;
   private List<String> type;
   private String name;
   private String description;
+  private List<String> tags;
+  private String ownerUserId;
+  private String cos;
   private String context;
   private String itemStatus;
   private String itemCreatedAt;
 
-  public Owner(JsonObject json) throws IllegalArgumentException {
+  public ResourceGroup(JsonObject json) {
     this.requestJson = json.copy(); // Store a copy of the input JSON
     this.context = json.getString("@context");
     this.id = UUID.fromString(json.getString("id", UUID.randomUUID().toString()));
     this.type = json.getJsonArray("type").getList();
     this.name = json.getString("name");
     this.description = json.getString("description");
+    this.tags = json.getJsonArray("tags").getList();
+    this.provider = json.getString("provider");
+    this.ownerUserId = json.getString("ownerUserId");
+    this.cos = json.getString("cos");
     this.itemStatus = json.getString("itemStatus");
     this.itemCreatedAt = json.getString("itemCreatedAt");
     validateFields();
   }
 
   private void validateFields() {
-    if (!id.toString().matches(ID_REGEX)) {
-      throw new IllegalArgumentException(String.format(
-          "[ECMA 262 regex \"%s\" does not match input string \"%s\"]",
-          ID_REGEX, id
-      ));
+    if (!UUID_PATTERN.matcher(id.toString()).matches()) {
+      throw new IllegalArgumentException(
+          String.format(
+              "[ECMA 262 regex \"%s\" does not match input string \"%s\"]", UUID_PATTERN, id));
     }
     if (name == null) {
       throw new IllegalArgumentException("[object has missing required properties ([\"name\"])])");
@@ -45,24 +55,25 @@ public class Owner implements Item {
           "[object has missing required properties ([\"description\"])])");
     }
     if (!name.matches(NAME_REGEX)) {
-      throw new IllegalArgumentException(String.format(
-          "[ECMA 262 regex \"%s\" does not match input string \"%s\"]",
-          NAME_REGEX, name
-      ));
+      throw new IllegalArgumentException(
+          String.format(
+              "[ECMA 262 regex \"%s\" does not match input string \"%s\"]", NAME_REGEX, name));
+    }
+    if (provider == null) {
+      throw new IllegalArgumentException(
+          "[object has missing required properties ([\"provider\"])])");
+    }
+    if (!provider.matches(PROVIDER_REGEX)) {
+      throw new IllegalArgumentException(
+          String.format(
+              "[ECMA 262 regex \"%s\" does not match input string \"%s\"]",
+              PROVIDER_REGEX, provider));
+    }
+    if (tags == null) {
+      throw new IllegalArgumentException("[object has missing required properties ([\"tags\"])])");
     }
   }
 
-  @Override
-  public String getContext() {
-    return context;
-  }
-
-  @Override
-  public void setContext(String context) {
-    this.context = context;
-  }
-
-  @Override
   public UUID getId() {
     return id;
   }
@@ -77,6 +88,7 @@ public class Owner implements Item {
     return type;
   }
 
+  @Override
   public void setType(List<String> type) {
     this.type = type;
   }
@@ -101,6 +113,44 @@ public class Owner implements Item {
     this.description = description;
   }
 
+  public List<String> getTags() {
+    return tags;
+  }
+
+  public void setTags(List<String> tags) {
+    this.tags = tags;
+  }
+
+  public String getOwnerUserId() {
+    return ownerUserId;
+  }
+
+  public void setOwnerUserId(String ownerUserId) {
+    this.ownerUserId = ownerUserId;
+  }
+
+  public String getCos() {
+    return cos;
+  }
+
+  public void setCos(String cos) {
+    this.cos = cos;
+  }
+
+  public JsonObject getRequestJson() {
+    return requestJson;
+  }
+
+  @Override
+  public String getContext() {
+    return context;
+  }
+
+  @Override
+  public void setContext(String context) {
+    this.context = context;
+  }
+
   @Override
   public String getItemStatus() {
     return itemStatus;
@@ -120,22 +170,28 @@ public class Owner implements Item {
   public void setItemCreatedAt(String itemCreatedAt) {
     this.itemCreatedAt = itemCreatedAt;
   }
-  public JsonObject getRequestJson() {
-    return requestJson;
+
+  public String getProvider() {
+    return provider;
   }
 
-  @Override
+  public void setProvider(String provider) {
+    this.provider = provider;
+  }
+
   public JsonObject toJson() {
     JsonObject json = new JsonObject();
-
-    // Set explicitly defined fields
     json.put("@context", context);
     json.put("id", id.toString());
     json.put("type", new JsonArray(type));
     json.put("name", name);
     json.put("description", description);
-    json.put("itemStatus", getItemStatus());
-    json.put("itemCreatedAt", getItemCreatedAt());
+    json.put("tags", new JsonArray(tags));
+    json.put("provider", provider);
+    json.put("ownerUserId", ownerUserId);
+    json.put("cos", cos);
+    json.put("itemStatus", itemStatus);
+    json.put("itemCreatedAt", itemCreatedAt);
     // Add additional fields from the original JSON request
     JsonObject requestJson = getRequestJson();
     for (String key : requestJson.fieldNames()) {
@@ -143,8 +199,6 @@ public class Owner implements Item {
         json.put(key, requestJson.getValue(key));
       }
     }
-
     return json;
   }
-
 }

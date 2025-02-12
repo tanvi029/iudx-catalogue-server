@@ -1,7 +1,6 @@
 package iudx.catalogue.server.apiserver.Item.handler;
 
 import static iudx.catalogue.server.apiserver.util.Constants.HEADER_TOKEN;
-import static iudx.catalogue.server.apiserver.util.Constants.ROUTE_ITEMS;
 import static iudx.catalogue.server.common.util.ResponseBuilderUtil.invalidUuidResponse;
 import static iudx.catalogue.server.common.util.ResponseBuilderUtil.itemNotFoundResponse;
 import static iudx.catalogue.server.common.util.ResponseBuilderUtil.linkValidationFailureResponse;
@@ -43,7 +42,8 @@ public class ItemLinkValidationHandler implements Handler<RoutingContext> {
 
     JsonObject requestBody = routingContext.body().asJsonObject();
     HttpServerResponse response = routingContext.response();
-    JwtAuthenticationInfo jwtAuthenticationInfo = RoutingContextHelper.getJwtAuthInfo(routingContext);
+    JwtAuthenticationInfo jwtAuthenticationInfo =
+        RoutingContextHelper.getJwtAuthInfo(routingContext);
     JwtAuthenticationInfo.MutableJwtInfo mutableJwtInfo =
         new JwtAuthenticationInfo.MutableJwtInfo(jwtAuthenticationInfo);
     String itemType = RoutingContextHelper.getItemType(routingContext);
@@ -123,18 +123,21 @@ public class ItemLinkValidationHandler implements Handler<RoutingContext> {
             COS_ADMIN);
     JsonObject req = new JsonObject().put(ID, itemId).put(INCLUDE_FIELDS, includeFields);
     LOGGER.debug(req);
-    crudService.getItem(req)
-        .onComplete(handler -> {
-          if (handler.succeeded()) {
-            if (handler.result().getInteger(TOTAL_HITS) != 1) {
-              promise.fail(itemNotFoundResponse("Fail: Doc doesn't exist, can't perform operation"));
-            } else {
-              promise.complete(handler.result().getJsonArray("results").getJsonObject(0));
-            }
-          } else {
-            promise.fail(handler.cause());
-          }
-        });
+    crudService
+        .getItem(req)
+        .onComplete(
+            handler -> {
+              if (handler.succeeded()) {
+                if (handler.result().getInteger(TOTAL_HITS) != 1) {
+                  promise.fail(
+                      itemNotFoundResponse("Fail: Doc doesn't exist, can't perform operation"));
+                } else {
+                  promise.complete(handler.result().getJsonArray("results").getJsonObject(0));
+                }
+              } else {
+                promise.fail(handler.cause());
+              }
+            });
     return promise.future();
   }
 
@@ -145,21 +148,27 @@ public class ItemLinkValidationHandler implements Handler<RoutingContext> {
 
     requestBody.put(HTTP_METHOD, routingContext.request().method().toString());
     /* Link Validating the request to ensure item correctness */
-    validatorService.validateItem(requestBody)
-        .onComplete(valHandler -> {
-          if (valHandler.failed()) {
-            LOGGER.error("Fail: Item validation failed;" + valHandler.cause().getMessage());
-            if (valHandler.cause().getMessage().contains("validation failed. Incorrect id")) {
-              response.setStatusCode(400).end(invalidUuidResponse("Syntax of the UUID is incorrect"));
-            } else {
-              response.setStatusCode(400).end(linkValidationFailureResponse(valHandler.cause().getMessage()));
-            }
-            return;
-          }
-          LOGGER.debug("Success: Item link validation");
-          RoutingContextHelper.setValidatedRequest(routingContext, valHandler.result());
-          routingContext.next();
-        });
+    validatorService
+        .validateItem(requestBody)
+        .onComplete(
+            valHandler -> {
+              if (valHandler.failed()) {
+                LOGGER.error("Fail: Item validation failed;" + valHandler.cause().getMessage());
+                if (valHandler.cause().getMessage().contains("validation failed. Incorrect id")) {
+                  response
+                      .setStatusCode(400)
+                      .end(invalidUuidResponse("Syntax of the UUID is incorrect"));
+                } else {
+                  response
+                      .setStatusCode(400)
+                      .end(linkValidationFailureResponse(valHandler.cause().getMessage()));
+                }
+                return;
+              }
+              LOGGER.debug("Success: Item link validation");
+              RoutingContextHelper.setValidatedRequest(routingContext, valHandler.result());
+              routingContext.next();
+            });
   }
 
   /**

@@ -10,7 +10,8 @@ public class COS implements Item {
       "^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$";
   private static final String NAME_REGEX = "^[a-zA-Z0-9-]([\\w-. ]*[a-zA-Z0-9- ])?$";
   private static final String COS_URL_REGEX = "^[a-zA-Z0-9-]{2,}(\\.[a-zA-Z0-9-/]{2,}){1,5}$";
-  private static final String COS_UI_REGEX = "^https://[a-zA-Z0-9-]{2,}(\\.[a-zA-Z0-9-/]{2,}){1,5}$";
+  private static final String COS_UI_REGEX =
+      "^https://[a-zA-Z0-9-]{2,}(\\.[a-zA-Z0-9-/]{2,}){1,5}$";
   private final JsonObject requestJson;
   private UUID owner;
   private String cosURL;
@@ -38,13 +39,11 @@ public class COS implements Item {
     validateFields();
   }
 
-
   private void validateFields() {
     if (!id.toString().matches(UUID_REGEX)) {
-      throw new IllegalArgumentException(String.format(
-          "[ECMA 262 regex \"%s\" does not match input string \"%s\"]",
-          UUID_REGEX, id
-      ));
+      throw new IllegalArgumentException(
+          String.format(
+              "[ECMA 262 regex \"%s\" does not match input string \"%s\"]", UUID_REGEX, id));
     }
     if (name == null) {
       throw new IllegalArgumentException("[object has missing required properties ([\"name\"])])");
@@ -54,28 +53,25 @@ public class COS implements Item {
           "[object has missing required properties ([\"description\"])])");
     }
     if (!name.matches(NAME_REGEX)) {
-      throw new IllegalArgumentException(String.format(
-          "[ECMA 262 regex \"%s\" does not match input string \"%s\"]",
-          NAME_REGEX, name
-      ));
+      throw new IllegalArgumentException(
+          String.format(
+              "[ECMA 262 regex \"%s\" does not match input string \"%s\"]", NAME_REGEX, name));
     }
     if (owner == null) {
       throw new IllegalArgumentException("[object has missing required properties ([\"owner\"])]");
     }
     if (!owner.toString().matches(UUID_REGEX)) {
-      throw new IllegalArgumentException(String.format(
-          "[ECMA 262 regex \"%s\" does not match input string \"%s\"]",
-          UUID_REGEX, owner
-      ));
+      throw new IllegalArgumentException(
+          String.format(
+              "[ECMA 262 regex \"%s\" does not match input string \"%s\"]", UUID_REGEX, owner));
     }
     if (cosURL == null) {
       throw new IllegalArgumentException("[object has missing required properties ([\"cosURL\"])]");
     }
     if (!cosURL.matches(COS_URL_REGEX)) {
-      throw new IllegalArgumentException(String.format(
-          "[ECMA 262 regex \"%s\" does not match input string \"%s\"]",
-          COS_URL_REGEX, cosURL
-      ));
+      throw new IllegalArgumentException(
+          String.format(
+              "[ECMA 262 regex \"%s\" does not match input string \"%s\"]", COS_URL_REGEX, cosURL));
     }
     if (cosUI == null) {
       throw new IllegalArgumentException("[object has missing required properties ([\"cosUI\"])]");
@@ -85,15 +81,15 @@ public class COS implements Item {
   // Utility method to parse and validate UUIDs
   private UUID parseUUID(String value, String fieldName) {
     if (value == null) {
-      throw new IllegalArgumentException("[object has missing required properties ([\"" + fieldName + "\"])])");
+      throw new IllegalArgumentException(
+          "[object has missing required properties ([\"" + fieldName + "\"])])");
     }
     try {
       return UUID.fromString(value);
     } catch (IllegalArgumentException e) {
-      throw new IllegalArgumentException(String.format(
-          "[ECMA 262 regex \"%s\" does not match input string \"%s\"]",
-          UUID_REGEX, value
-      ));
+      throw new IllegalArgumentException(
+          String.format(
+              "[ECMA 262 regex \"%s\" does not match input string \"%s\"]", UUID_REGEX, value));
     }
   }
 
@@ -166,7 +162,6 @@ public class COS implements Item {
     this.itemCreatedAt = itemCreatedAt;
   }
 
-
   public UUID getOwner() {
     return owner;
   }
@@ -190,6 +185,7 @@ public class COS implements Item {
   public void setCosUI(String cosUI) {
     this.cosUI = cosUI;
   }
+
   public JsonObject getRequestJson() {
     return requestJson;
   }
@@ -219,5 +215,4 @@ public class COS implements Item {
 
     return json;
   }
-
 }

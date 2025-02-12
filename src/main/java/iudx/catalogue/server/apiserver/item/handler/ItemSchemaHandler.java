@@ -51,6 +51,7 @@ public class ItemSchemaHandler implements Handler<RoutingContext> {
   public void handle(RoutingContext context) throws IllegalArgumentException {
     context.next();
   }
+
   /**
    * Validates the authorization of the incoming request. Checks if the request contains a token
    * field.
@@ -97,7 +98,7 @@ public class ItemSchemaHandler implements Handler<RoutingContext> {
             .setItemType(itemType);
     if (routingContext.request().method().toString().equals(REQUEST_POST)) {
       jwtAuthenticationInfo.setMethod(REQUEST_POST);
-    } else if (routingContext.request().method().toString().equals(REQUEST_PUT)){
+    } else if (routingContext.request().method().toString().equals(REQUEST_PUT)) {
       jwtAuthenticationInfo.setMethod(REQUEST_PUT);
     }
     RoutingContextHelper.setJwtAuthInfo(routingContext, jwtAuthenticationInfo.build());
@@ -170,7 +171,7 @@ public class ItemSchemaHandler implements Handler<RoutingContext> {
       routingContext.next();
     } else {
       LOGGER.error("Fail: Invalid request payload");
-      if (routingContext.request().method().toString().equals(REQUEST_GET)){
+      if (routingContext.request().method().toString().equals(REQUEST_GET)) {
         response.setStatusCode(400).end(invalidUuidResponse("The id is invalid"));
       } else {
         response

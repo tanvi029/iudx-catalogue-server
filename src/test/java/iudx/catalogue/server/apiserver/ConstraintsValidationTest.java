@@ -1,5 +1,6 @@
 package iudx.catalogue.server.apiserver;
 
+import static iudx.catalogue.server.apiserver.util.Constants.UAC_DEPLOYMENT;
 import static iudx.catalogue.server.util.Constants.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import io.vertx.core.DeploymentOptions;
@@ -47,7 +48,6 @@ public class ConstraintsValidationTest {
   static void startVertx(Vertx vertx, VertxTestContext testContext) {
 
     JsonObject apiconfig = Configuration.getConfiguration("./configs/config-test.json", 3);
-    apiconfig.put("dxApiBasePath","/iudx/cat/v1");
     JsonObject validationconfig = Configuration.getConfiguration("./configs/config-test.json", 2);
 
     vertx.deployVerticle(new ApiServerVerticle(), new DeploymentOptions().setConfig(apiconfig),
@@ -59,6 +59,7 @@ public class ConstraintsValidationTest {
     databaseUser = validationconfig.getString(DATABASE_UNAME);
     databasePassword = validationconfig.getString(DATABASE_PASSWD);
     docIndex = validationconfig.getString(DOC_INDEX);
+    isUACinstance = apiconfig.getBoolean(UAC_DEPLOYMENT);
     vocContext = "xyz";
 
     fileSystem = vertx.fileSystem();

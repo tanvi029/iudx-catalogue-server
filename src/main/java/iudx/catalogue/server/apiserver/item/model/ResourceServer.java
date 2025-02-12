@@ -29,7 +29,6 @@ public class ResourceServer implements Item {
   private List<String> tags;
   private String context;
 
-
   public ResourceServer(JsonObject json) {
     this.requestJson = json.copy(); // Store a copy of the input JSON
     this.context = json.getString("@context");
@@ -58,9 +57,10 @@ public class ResourceServer implements Item {
 
     JsonArray modalitiesJson = json.getJsonArray("resourceAccessModalities");
     if (modalitiesJson != null) {
-      this.resourceAccessModalities = modalitiesJson.stream()
-          .map(obj -> new ResourceAccessModality((JsonObject) obj))
-          .collect(Collectors.toList());
+      this.resourceAccessModalities =
+          modalitiesJson.stream()
+              .map(obj -> new ResourceAccessModality((JsonObject) obj))
+              .collect(Collectors.toList());
     }
 
     validateFields();
@@ -68,76 +68,75 @@ public class ResourceServer implements Item {
 
   private void validateFields() {
     if (!id.toString().matches(UUID_REGEX)) {
-      throw new IllegalArgumentException(String.format(
-          "[ECMA 262 regex \"%s\" does not match input string \"%s\"]",
-          UUID_REGEX, id
-      ));
+      throw new IllegalArgumentException(
+          String.format(
+              "[ECMA 262 regex \"%s\" does not match input string \"%s\"]", UUID_REGEX, id));
     }
     if (name == null) {
       throw new IllegalArgumentException("[object has missing required properties ([\"name\"])])");
     }
     if (description == null) {
-      throw new IllegalArgumentException("[object has missing required properties ([\"description\"])])");
+      throw new IllegalArgumentException(
+          "[object has missing required properties ([\"description\"])])");
     }
     if (!name.matches(NAME_PATTERN)) {
-      throw new IllegalArgumentException(String.format(
-          "[ECMA 262 regex \"%s\" does not match input string \"%s\"]",
-          NAME_PATTERN, name
-      ));
+      throw new IllegalArgumentException(
+          String.format(
+              "[ECMA 262 regex \"%s\" does not match input string \"%s\"]", NAME_PATTERN, name));
     }
     if (cos == null) {
       throw new IllegalArgumentException("[object has missing required properties ([\"cos\"])])");
     }
     if (!cos.toString().matches(UUID_REGEX)) {
-      throw new IllegalArgumentException(String.format(
-          "[ECMA 262 regex \"%s\" does not match input string \"%s\"]",
-          UUID_REGEX, cos
-      ));
+      throw new IllegalArgumentException(
+          String.format(
+              "[ECMA 262 regex \"%s\" does not match input string \"%s\"]", UUID_REGEX, cos));
     }
     if (owner == null) {
       throw new IllegalArgumentException("[object has missing required properties ([\"owner\"])])");
     }
     if (!owner.toString().matches(UUID_REGEX)) {
-      throw new IllegalArgumentException(String.format(
-          "[ECMA 262 regex \"%s\" does not match input string \"%s\"]",
-          UUID_REGEX, owner
-      ));
+      throw new IllegalArgumentException(
+          String.format(
+              "[ECMA 262 regex \"%s\" does not match input string \"%s\"]", UUID_REGEX, owner));
     }
     if (resourceServerRegURL == null) {
-      throw new IllegalArgumentException("[object has missing required properties ([\"resourceServerRegURL\"])])");
+      throw new IllegalArgumentException(
+          "[object has missing required properties ([\"resourceServerRegURL\"])])");
     }
     if (!resourceServerRegURL.matches(REG_URL_PATTERN)) {
-      throw new IllegalArgumentException(String.format(
-          "[ECMA 262 regex \"%s\" does not match input string \"%s\"]",
-          REG_URL_PATTERN, resourceServerRegURL
-      ));
+      throw new IllegalArgumentException(
+          String.format(
+              "[ECMA 262 regex \"%s\" does not match input string \"%s\"]",
+              REG_URL_PATTERN, resourceServerRegURL));
     }
     if (resourceServerOrg == null) {
-      throw new IllegalArgumentException("[object has missing required properties ([\"resourceServerOrg\"])])");
+      throw new IllegalArgumentException(
+          "[object has missing required properties ([\"resourceServerOrg\"])])");
     }
     if (tags == null) {
       throw new IllegalArgumentException("[object has missing required properties ([\"tags\"])])");
     }
     if (resourceAccessModalities == null) {
-      throw new IllegalArgumentException("[object has missing required properties ([\"resourceAccessModalities\"])])");
+      throw new IllegalArgumentException(
+          "[object has missing required properties ([\"resourceAccessModalities\"])])");
     }
   }
 
   // Utility method to parse and validate UUIDs
   private UUID parseUUID(String value, String fieldName) {
     if (value == null) {
-      throw new IllegalArgumentException("[object has missing required properties ([\"" + fieldName + "\"])])");
+      throw new IllegalArgumentException(
+          "[object has missing required properties ([\"" + fieldName + "\"])])");
     }
     try {
       return UUID.fromString(value);
     } catch (IllegalArgumentException e) {
-      throw new IllegalArgumentException(String.format(
-          "[ECMA 262 regex \"%s\" does not match input string \"%s\"]",
-          UUID_REGEX, value
-      ));
+      throw new IllegalArgumentException(
+          String.format(
+              "[ECMA 262 regex \"%s\" does not match input string \"%s\"]", UUID_REGEX, value));
     }
   }
-
 
   @Override
   public UUID getId() {
@@ -290,9 +289,12 @@ public class ResourceServer implements Item {
       json.put("location", location.toJson());
     }
     if (resourceAccessModalities != null && !resourceAccessModalities.isEmpty()) {
-      json.put("resourceAccessModalities", new JsonArray(resourceAccessModalities.stream()
-          .map(ResourceAccessModality::toJson)
-          .collect(Collectors.toList())));
+      json.put(
+          "resourceAccessModalities",
+          new JsonArray(
+              resourceAccessModalities.stream()
+                  .map(ResourceAccessModality::toJson)
+                  .collect(Collectors.toList())));
     }
     // Add additional fields from the original JSON request
     JsonObject requestJson = getRequestJson();
@@ -322,13 +324,16 @@ public class ResourceServer implements Item {
 
     private void validateResourceServerOrgFields() {
       if (name == null) {
-        throw new IllegalArgumentException("[object has missing required properties ([\"name\"])])");
+        throw new IllegalArgumentException(
+            "[object has missing required properties ([\"name\"])])");
       }
       if (additionalInfoURL == null) {
-        throw new IllegalArgumentException("[object has missing required properties ([\"additionalInfoURL\"])])");
+        throw new IllegalArgumentException(
+            "[object has missing required properties ([\"additionalInfoURL\"])])");
       }
       if (location == null) {
-        throw new IllegalArgumentException("[object has missing required properties ([\"location\"])])");
+        throw new IllegalArgumentException(
+            "[object has missing required properties ([\"location\"])])");
       }
     }
 
@@ -356,13 +361,16 @@ public class ResourceServer implements Item {
 
     private void validateLocationFields() {
       if (type == null) {
-        throw new IllegalArgumentException("[object has missing required properties ([\"type\"])])");
+        throw new IllegalArgumentException(
+            "[object has missing required properties ([\"type\"])])");
       }
       if (address == null) {
-        throw new IllegalArgumentException("[object has missing required properties ([\"address\"])])");
+        throw new IllegalArgumentException(
+            "[object has missing required properties ([\"address\"])])");
       }
       if (geometry == null) {
-        throw new IllegalArgumentException("[object has missing required properties ([\"geometry\"])])");
+        throw new IllegalArgumentException(
+            "[object has missing required properties ([\"geometry\"])])");
       }
     }
 
@@ -381,20 +389,24 @@ public class ResourceServer implements Item {
 
     public Geometry(JsonObject json) {
       this.type = json.getString("type");
-      this.coordinates = json.getJsonArray("coordinates").stream()
-          .map(obj -> ((Number) obj).doubleValue())
-          .collect(Collectors.toList());
+      this.coordinates =
+          json.getJsonArray("coordinates").stream()
+              .map(obj -> ((Number) obj).doubleValue())
+              .collect(Collectors.toList());
       validateGeometryFields();
     }
 
     private void validateGeometryFields() {
       if (type == null) {
-        throw new IllegalArgumentException("[object has missing required properties ([\"type\"])])");
+        throw new IllegalArgumentException(
+            "[object has missing required properties ([\"type\"])])");
       }
       if (coordinates == null || coordinates.isEmpty()) {
-        throw new IllegalArgumentException("[object has missing required properties ([\"coordinates\"])])");
+        throw new IllegalArgumentException(
+            "[object has missing required properties ([\"coordinates\"])])");
       }
     }
+
     public JsonObject toJson() {
       JsonObject json = new JsonObject();
       json.put("type", type);
@@ -419,13 +431,16 @@ public class ResourceServer implements Item {
 
     private void validateResourceAccessModalityFields() {
       if (type == null || type.isEmpty()) {
-        throw new IllegalArgumentException("[object has missing required properties ([\"type\"])])");
+        throw new IllegalArgumentException(
+            "[object has missing required properties ([\"type\"])])");
       }
       if (protocol == null) {
-        throw new IllegalArgumentException("[object has missing required properties ([\"protocol\"])])");
+        throw new IllegalArgumentException(
+            "[object has missing required properties ([\"protocol\"])])");
       }
       if (accessURL == null) {
-        throw new IllegalArgumentException("[object has missing required properties ([\"accessURL\"])])");
+        throw new IllegalArgumentException(
+            "[object has missing required properties ([\"accessURL\"])])");
       }
     }
 
