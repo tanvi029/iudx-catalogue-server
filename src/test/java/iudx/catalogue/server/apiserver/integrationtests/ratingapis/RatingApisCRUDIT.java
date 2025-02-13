@@ -21,29 +21,29 @@ public class RatingApisCRUDIT {
         RestAssured.basePath = "";
     }
     // Create Rating
-//    @Test
-//    @Order(1)
-//    @DisplayName("Create Rating Success Response-201")
-//    public void createRatingSuccessTest() {
-//        // Request Body
-//        JsonObject requestBody = new JsonObject()
-//                .put("rating", 4.8)
-//                .put("comment", "good resource");
-//
-//        given()
-//                .queryParam("id", itemId)
-//                .queryParam("type","group")
-//                .header("Content-Type", "application/json")
-//                .header("token", consumerToken)
-//                .body(requestBody.encodePrettily())
-//                .when()
-//                .post("/consumer/ratings")
-//                .then()
-//                .statusCode(201)
-//                //.log().body()
-//                .body("type", equalTo("urn:dx:cat:Success"))
-//                .body("results[0].id", notNullValue());
-//    }
+    @Test
+    @Order(1)
+    @DisplayName("Create Rating Success Response-201")
+    public void createRatingSuccessTest() {
+        // Request Body
+        JsonObject requestBody = new JsonObject()
+                .put("rating", 4.8)
+                .put("comment", "good resource");
+
+        given()
+                .queryParam("id", itemId)
+                .queryParam("type","group")
+                .header("Content-Type", "application/json")
+                .header("token", consumerToken)
+                .body(requestBody.encodePrettily())
+                .when()
+                .post("/consumer/ratings")
+                .then()
+                .statusCode(201)
+                //.log().body()
+                .body("type", equalTo("urn:dx:cat:Success"))
+                .body("results[0].id", notNullValue());
+    }
     @Test
     @Order(2)
     @DisplayName("Create rating with invalid token test- 401")
@@ -107,27 +107,27 @@ public class RatingApisCRUDIT {
 
     //Update Rating
 
-//    @Test
-//    @Order(5)
-//    @DisplayName("Update rating success response test- 200")
-//    public void updateRatingSuccessTest(){
-//        //request body
-//        JsonObject requestBody = new JsonObject()
-//                .put("rating", 4.8)
-//                .put("comment", "very good resource");
-//        given()
-//                .queryParam("id",itemId)
-//                .header("Content-Type","application/json")
-//                .header("token",consumerToken)
-//                .body(requestBody.encodePrettily())
-//                .when()
-//                .put("/consumer/ratings")
-//                .then()
-//                .statusCode(200)
-//                //.log().body()
-//                .body("type", equalTo("urn:dx:cat:Success"));
-//
-//    }
+    @Test
+    @Order(5)
+    @DisplayName("Update rating success response test- 200")
+    public void updateRatingSuccessTest(){
+        //request body
+        JsonObject requestBody = new JsonObject()
+                .put("rating", 4.8)
+                .put("comment", "very good resource");
+        given()
+                .queryParam("id",itemId)
+                .header("Content-Type","application/json")
+                .header("token",consumerToken)
+                .body(requestBody.encodePrettily())
+                .when()
+                .put("/consumer/ratings")
+                .then()
+                .statusCode(200)
+                //.log().body()
+                .body("type", equalTo("urn:dx:cat:Success"));
+
+    }
     @Test
     @Order(6)
     @DisplayName("Update rating with Invalid Token Test- 401")
@@ -174,61 +174,61 @@ public class RatingApisCRUDIT {
 
     //Get Rating
 
-//    @Test
-//    @Order(8)
-//    @DisplayName("Get Rating Success Test-200")
-//    public void getRatingSuccessTest(){
-//        given()
-//                .queryParam("id", itemId)
-//                .header("token",consumerToken)
-//                .when()
-//                .get("/consumer/ratings")
-//                .then()
-//                .statusCode(200)
-//                //.log().body()
-//                .body("type", equalTo("urn:dx:cat:Success"));
-//    }
-//    @Test
-//    @Order(9)
-//    @DisplayName("Get Rating With No Content Test-204")
-//    public void getRatingWithNoContentTest(){
-//        given()
-//                .queryParam("id","8054c01a-14dd-4214-9d4f-a45dde44e121")
-//                .header("token",consumerToken)
-//                .when()
-//                .get("/consumer/ratings")
-//                .then()
-//                .statusCode(204);
-//                //.log().body();
-//    }
-//    @Test
-//    @Order(10)
-//    @DisplayName("Get All Ratings Success Test-200")
-//    public void getAllRatingsSuccessTest(){
-//        given()
-//                .queryParam("id",approvedItemId)
-//                .queryParam("type","group")
-//                .when()
-//                .get("/consumer/ratings")
-//                .then()
-//                .statusCode(200)
-//                //.log().body()
-//                .body("type", equalTo("urn:dx:cat:Success"));
-//    }
-//    @Test
-//    @Order(11)
-//    @DisplayName("Get Average Rating Success Test-200")
-//    public void getAverageRatingSuccessTest(){
-//        given()
-//                .queryParam("id","5b7556b5-0779-4c47-9cf2-3f209779aa22")
-//                .queryParam("type","average")
-//                .when()
-//                .get("/consumer/ratings")
-//                .then()
-//                .statusCode(200)
-//                //.log().body()
-//                .body("type", equalTo("urn:dx:cat:Success"));
-//    }
+    @Test
+    @Order(8)
+    @DisplayName("Get Rating Success Test-200")
+    public void getRatingSuccessTest(){
+        given()
+                .queryParam("id", itemId)
+                .header("token",consumerToken)
+                .when()
+                .get("/consumer/ratings")
+                .then()
+                .statusCode(200)
+                //.log().body()
+                .body("type", equalTo("urn:dx:cat:Success"));
+    }
+    @Test
+    @Order(9)
+    @DisplayName("Get Rating With No Content Test-204")
+    public void getRatingWithNoContentTest(){
+        given()
+                .queryParam("id","8054c01a-14dd-4214-9d4f-a45dde44e121")
+                .header("token",consumerToken)
+                .when()
+                .get("/consumer/ratings")
+                .then()
+                .statusCode(204);
+                //.log().body();
+    }
+    @Test
+    @Order(10)
+    @DisplayName("Get All Ratings Success Test-200")
+    public void getAllRatingsSuccessTest(){
+        given()
+                .queryParam("id",approvedItemId)
+                .queryParam("type","group")
+                .when()
+                .get("/consumer/ratings")
+                .then()
+                .statusCode(200)
+                //.log().body()
+                .body("type", equalTo("urn:dx:cat:Success"));
+    }
+    @Test
+    @Order(11)
+    @DisplayName("Get Average Rating Success Test-200")
+    public void getAverageRatingSuccessTest(){
+        given()
+                .queryParam("id","5b7556b5-0779-4c47-9cf2-3f209779aa22")
+                .queryParam("type","average")
+                .when()
+                .get("/consumer/ratings")
+                .then()
+                .statusCode(200)
+                //.log().body()
+                .body("type", equalTo("urn:dx:cat:Success"));
+    }
     @Test
     @Order(12)
     @DisplayName("Get Average Rating With Invalid ID Test-400")
@@ -260,21 +260,21 @@ public class RatingApisCRUDIT {
     }
 
     //Delete rating
-//    @Test
-//    @Order(14)
-//    @DisplayName("Delete Rating Success Response Test-200")
-//    public void deleteRatingSuccessTest() {
-//        given()
-//                .queryParam("id",itemId)
-//                .header("Content-Type", "application/json")
-//                .header("token", consumerToken)
-//                .when()
-//                .delete("/consumer/ratings")
-//                .then()
-//                .statusCode(200)
-//                //.log().body()
-//                .body("type", equalTo("urn:dx:cat:Success"));
-//    }
+    @Test
+    @Order(14)
+    @DisplayName("Delete Rating Success Response Test-200")
+    public void deleteRatingSuccessTest() {
+        given()
+                .queryParam("id",itemId)
+                .header("Content-Type", "application/json")
+                .header("token", consumerToken)
+                .when()
+                .delete("/consumer/ratings")
+                .then()
+                .statusCode(200)
+                //.log().body()
+                .body("type", equalTo("urn:dx:cat:Success"));
+    }
     @Test
     @DisplayName("Delete Rating With Invalid Token Test-401")
     public void deleteRatingWithInvalidTokenTest() {
