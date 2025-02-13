@@ -13,33 +13,33 @@ Catalogue Middle layer specific APIs*/
 
 @ExtendWith(RestAssuredConfiguration.class)
 public class GetProvidersIT {
-//    @Test
-//    @Order(1)
-//    @DisplayName("Get Mlayer Providers Success Test-200")
-//    public void getProvidersTest(){
-//        given()
-//                .when()
-//                .get("/internal/ui/providers")
-//                .then()
-//                .statusCode(200)
-//                //.log().body()
-//                .body("type",equalTo("urn:dx:cat:Success"));
-//    }
+    @Test
+    @Order(1)
+    @DisplayName("Get Mlayer Providers Success Test-200")
+    public void getProvidersTest(){
+        given()
+                .when()
+                .get("/internal/ui/providers")
+                .then()
+                .statusCode(200)
+                //.log().body()
+                .body("type",equalTo("urn:dx:cat:Success"));
+    }
 
-//    @Test
-//    @Order(2)
-//    @DisplayName("Get Mlayer Provider by Limit and Offset Test-200")
-//    public void getMlayerProviderByLimitAndOffset() {
-//        given()
-//                .param("limit",10)
-//                .param("offset", 0)
-//                .when()
-//                .get("/internal/ui/domain")
-//                .then()
-//                .statusCode(200)
-//                //.log().body()
-//                .body("type", equalTo("urn:dx:cat:Success"));
-//    }
+    @Test
+    @Order(2)
+    @DisplayName("Get Mlayer Provider by Limit and Offset Test-200")
+    public void getMlayerProviderByLimitAndOffset() {
+        given()
+                .param("limit",10)
+                .param("offset", 0)
+                .when()
+                .get("/internal/ui/domain")
+                .then()
+                .statusCode(200)
+                //.log().body()
+                .body("type", equalTo("urn:dx:cat:Success"));
+    }
     @Test
     @Order(3)
     @DisplayName("Invalid limit value Test-400")
