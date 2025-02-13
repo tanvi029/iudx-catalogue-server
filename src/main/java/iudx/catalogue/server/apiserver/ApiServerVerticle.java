@@ -90,7 +90,30 @@ public class ApiServerVerticle extends AbstractVerticle {
   @Override
   public void start() throws Exception {
     Router router = Router.router(vertx);
-    router.route().handler(BodyHandler.create()); // Add BodyHandler to handle request bodies
+    // API Routes and Callbacks
+    // Routes - Defines the routes and callbacks
+    router.route().handler(BodyHandler.create());
+    router
+        .route()
+        .handler(
+            CorsHandler.create("*")
+                .allowedHeaders(ALLOWED_HEADERS)
+                .allowedMethods(ALLOWED_METHODS));
+
+    router
+        .route()
+        .handler(
+            routingContext -> {
+              routingContext
+                  .response()
+                  .putHeader("Cache-Control",
+                      "no-cache, no-store, max-age=0, must-revalidate")
+                  .putHeader("Pragma", "no-cache")
+                  .putHeader("Expires", "0")
+                  .putHeader("X-Content-Type-Options", "nosniff");
+              routingContext.next();
+            });
+
     dxApiBasePath = config().getString("dxApiBasePath");
     docIndex = config().getString("docIndex");
     api = Api.getInstance(dxApiBasePath);
@@ -195,30 +218,6 @@ public class ApiServerVerticle extends AbstractVerticle {
 
     RelationshipService relService = new RelationshipServiceImpl(elasticsearchService, docIndex);
     relationshipController = new RelationshipController(router, relService);
-
-    // API Routes and Callbacks
-
-    // Routes - Defines the routes and callbacks
-    router.route().handler(BodyHandler.create());
-    router
-        .route()
-        .handler(
-            CorsHandler.create("*")
-                .allowedHeaders(ALLOWED_HEADERS)
-                .allowedMethods(ALLOWED_METHODS));
-
-    router
-        .route()
-        .handler(
-            routingContext -> {
-              routingContext
-                  .response()
-                  .putHeader("Cache-Control", "no-cache, no-store, max-age=0, must-revalidate")
-                  .putHeader("Pragma", "no-cache")
-                  .putHeader("Expires", "0")
-                  .putHeader("X-Content-Type-Options", "nosniff");
-              routingContext.next();
-            });
 
     //  Documentation routes
 
