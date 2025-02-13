@@ -91,20 +91,20 @@ public class DatasetIT {
 //                //.log().body()
 //                .body("type", equalTo("urn:dx:cat:Success"));
 //    }
-//    @Test
-//    @DisplayName("Item Not Found Test-404")
-//    public void itemNotFoundTest(){
-//        JsonObject requestBody = new JsonObject().put("id", "8b95ab80-2aaq-4636-a65e-7f2563d0d371");
-//
-//        given()
-//                .body(requestBody.encodePrettily())
-//                .when()
-//                .post("/internal/ui/dataset")
-//                .then()
-//                .statusCode(404)
-//                //.log().body()
-//                .body("type", equalTo("urn:dx:cat:ItemNotFound"));
-//    }
+    @Test
+    @DisplayName("Item Not Found Test-404")
+    public void itemNotFoundTest(){
+        JsonObject requestBody = new JsonObject().put("id", "8b95ab80-2aaq-4636-a65e-7f2563d0d371");
+
+        given()
+                .body(requestBody.encodePrettily())
+                .when()
+                .post("/internal/ui/dataset")
+                .then()
+                .statusCode(404)
+                //.log().body()
+                .body("type", equalTo("urn:dx:cat:ItemNotFound"));
+    }
     @Test
     @DisplayName("Invalid Schema Test-400")
     public void invalidSchemaTest(){
