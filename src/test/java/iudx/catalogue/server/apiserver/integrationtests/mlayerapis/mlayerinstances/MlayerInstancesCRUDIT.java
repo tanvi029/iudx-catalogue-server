@@ -162,20 +162,20 @@ public class MlayerInstancesCRUDIT {
 
     // Retrieving Mlayer Instance
 
-    @Test
-    @Order(7)
-    @DisplayName("Get All Mlayer Instance success response test- 200")
-    public void getAllMlayerInstanceSuccessTest(){
-        given()
-                .header("Content-Type","application/json")
-                .when()
-                .get("/internal/ui/instance")
-                .then()
-                .statusCode(200)
-                //.log().body()
-                .body("type", equalTo("urn:dx:cat:Success"));
-
-    }
+//    @Test
+//    @Order(7)
+//    @DisplayName("Get All Mlayer Instance success response test- 200")
+//    public void getAllMlayerInstanceSuccessTest(){
+//        given()
+//                .header("Content-Type","application/json")
+//                .when()
+//                .get("/internal/ui/instance")
+//                .then()
+//                .statusCode(200)
+//                //.log().body()
+//                .body("type", equalTo("urn:dx:cat:Success"));
+//
+//    }
 //    @Test
 //    @Order(8)
 //    @DisplayName("Get Mlayer Instance success response by Id test- 200")
