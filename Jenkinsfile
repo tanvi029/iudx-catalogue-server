@@ -186,7 +186,8 @@ pipeline {
         stage('Integration test on swarm deployment') {
           steps {
             script{
-                sh 'mvn test-compile failsafe:integration-test -DskipUnitTests=true -DintTestDepl=true'
+              sh 'sudo update-alternatives --set java /usr/lib/jvm/java-21-openjdk-amd64/bin/java'
+              sh 'mvn test-compile failsafe:integration-test -DskipUnitTests=true -DintTestDepl=true'
             }
           }
           post{
@@ -198,6 +199,11 @@ pipeline {
             }
             failure{
               error "Test failure. Stopping pipeline execution!"
+            }
+            cleanup{
+              script{
+                sh 'sudo update-alternatives --set java /usr/lib/jvm/java-11-openjdk-amd64/bin/java'
+              }
             }
           }
         }
