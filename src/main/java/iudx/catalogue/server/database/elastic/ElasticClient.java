@@ -4,6 +4,10 @@ import co.elastic.clients.elasticsearch.ElasticsearchAsyncClient;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;
 import co.elastic.clients.transport.ElasticsearchTransport;
 import co.elastic.clients.transport.rest_client.RestClientTransport;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
@@ -34,7 +38,20 @@ public class ElasticClient {
                 httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(credentials))
             .build();
 
-    ElasticsearchTransport transport = new RestClientTransport(rsClient, new JacksonJsonpMapper());
+    // Enable Jackson to allow comments in the JSON response
+    ObjectMapper objectMapper = new ObjectMapper();
+    objectMapper.enable(JsonParser.Feature.ALLOW_COMMENTS); // This allows JSON comments
+
+    // Handle special characters, null fields, and unknown fields
+    objectMapper.configure(
+        JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true); // Allow unquoted field names
+    objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL); // Skip null fields
+    objectMapper.configure(
+        DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false); // Ignore unknown properties
+
+    // Create the JacksonJsonpMapper with the modified ObjectMapper
+    JacksonJsonpMapper jsonpMapper = new JacksonJsonpMapper(objectMapper);
+    ElasticsearchTransport transport = new RestClientTransport(rsClient, jsonpMapper);
     this.client = new ElasticsearchAsyncClient(transport);
   }
 
