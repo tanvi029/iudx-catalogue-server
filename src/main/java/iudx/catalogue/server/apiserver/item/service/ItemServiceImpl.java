@@ -251,7 +251,8 @@ public class ItemServiceImpl implements ItemService {
                                         } else {
                                           promise.fail(
                                               new NoSuchElementException(
-                                                  "Fail: Doc doesn't exist, can't perform operation"));
+                                                  "Fail: Doc doesn't exist, "
+                                                      + "can't perform operation"));
                                         }
                                       } else {
                                         Throwable cause = dbHandler.cause();
