@@ -97,12 +97,21 @@ public class ItemServiceImpl implements ItemService {
     checkItemQueryModel.setOffset(FILTER_PAGINATION_FROM);
 
     verifyInstance(instanceId)
+        .compose(
+            instanceExists -> {
+              if (!instanceExists) {
+                LOGGER.debug(INSTANCE_NOT_EXISTS);
+                return Future.failedFuture("Fail: Instance doesn't exist/registered");
+              }
+              return Future.succeededFuture(doc);
+            })
         .compose(v -> checkItemExists(checkItemQueryModel))
         .compose(
             exists -> {
               if (exists) {
                 // Early exit to avoid further processing
-                throw new IllegalStateException("Item already exists");
+                LOGGER.debug("Item already exists");
+                return Future.failedFuture("Item already exists");
               }
               return Future.succeededFuture(doc);
             })
@@ -240,8 +249,9 @@ public class ItemServiceImpl implements ItemService {
                                               successResp(
                                                   id, "Success: Item deleted successfully"));
                                         } else {
-                                          promise.fail(new NoSuchElementException(
-                                              "Fail: Doc doesn't exist, can't perform operation"));
+                                          promise.fail(
+                                              new NoSuchElementException(
+                                                  "Fail: Doc doesn't exist, can't perform operation"));
                                         }
                                       } else {
                                         Throwable cause = dbHandler.cause();
@@ -331,12 +341,15 @@ public class ItemServiceImpl implements ItemService {
               if (dbHandler.succeeded()) {
                 List<ElasticsearchResponse> response = dbHandler.result();
                 if (response.isEmpty()) {
-                  LOGGER.debug("Success: Item doesn't exist");
+                  LOGGER.debug("Item doesn't exist");
                   promise.complete(false);
                 } else {
-                  LOGGER.debug("Fail: Item exists");
+                  LOGGER.debug("Item exists");
                   promise.complete(true);
                 }
+              } else {
+                LOGGER.error(ERROR_DB_REQUEST + dbHandler.cause().getMessage());
+                promise.fail(TYPE_INTERNAL_SERVER_ERROR);
               }
             });
     return promise.future();
@@ -442,7 +455,21 @@ public class ItemServiceImpl implements ItemService {
     checkInstanceQueryModel.setQueries(new QueryModel(QueryType.MATCH, termParams));
     checkInstanceQueryModel.setLimit(MAX_LIMIT);
     checkInstanceQueryModel.setOffset(FILTER_PAGINATION_FROM);
-    checkItemExists(checkInstanceQueryModel);
+    checkItemExists(checkInstanceQueryModel)
+        .onSuccess(
+            isItemExists -> {
+              if (isItemExists) {
+                LOGGER.debug("Info: Instance exists.");
+                promise.complete(true);
+              } else {
+                LOGGER.debug("Info: Instance doesn't exist.");
+                promise.complete(false);
+              }
+            })
+        .onFailure(
+            checkRes -> {
+              promise.fail(checkRes.getLocalizedMessage());
+            });
     return promise.future();
   }
 }
