@@ -28,7 +28,7 @@ import org.mockito.stubbing.Answer;
 @ExtendWith(MockitoExtension.class)
 @ExtendWith(VertxExtension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-@Disabled
+
 public class DatabaseServiceTest {
   private static final Logger LOGGER = LogManager.getLogger(DatabaseServiceTest.class);
   private static DatabaseService dbService;

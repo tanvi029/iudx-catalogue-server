@@ -31,7 +31,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 @ExtendWith(VertxExtension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-@Disabled
 public class ElasticClientTest {
   @Mock
   Handler<AsyncResult<JsonObject>> handler;

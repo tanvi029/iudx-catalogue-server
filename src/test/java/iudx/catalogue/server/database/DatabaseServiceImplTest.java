@@ -32,7 +32,7 @@ import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
-@Disabled
+
 @ExtendWith(MockitoExtension.class)
 @ExtendWith(VertxExtension.class)
 public class DatabaseServiceImplTest {

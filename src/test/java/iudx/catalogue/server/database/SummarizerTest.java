@@ -11,7 +11,7 @@ import io.vertx.core.json.JsonObject;
 
 @ExtendWith(VertxExtension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-@Disabled
+
 public class SummarizerTest {
 
   private static final Logger LOGGER = LogManager.getLogger(SummarizerTest.class);

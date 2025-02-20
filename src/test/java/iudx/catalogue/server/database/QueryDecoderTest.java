@@ -24,7 +24,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(VertxExtension.class)
 @ExtendWith(MockitoExtension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-@Disabled
 public class QueryDecoderTest {
 
   private static QueryDecoder queryDecoder;
