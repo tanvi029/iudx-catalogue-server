@@ -415,7 +415,7 @@ public class MlayerServiceImpl implements MlayerService {
   public Future<JsonObject> getMlayerPopularDatasets(String instance) {
     Promise<JsonObject> promise = Promise.promise();
     String query = GET_HIGH_COUNT_DATASET.replace("$1", databaseTable);
-    LOGGER.debug("postgres query" + query);
+    LOGGER.debug("postgres query " + query);
     postgresService.executeQuery(query).onComplete(dbHandler -> {
       if (dbHandler.succeeded()) {
         JsonArray popularDataset = dbHandler.result().getJsonArray("results");
@@ -436,7 +436,7 @@ public class MlayerServiceImpl implements MlayerService {
         mlayerPopularDatasets.getMlayerPopularDatasets(instance, popularRgs)
             .onComplete(getPopularDatasetsHandler -> {
               if (getPopularDatasetsHandler.succeeded()) {
-                LOGGER.info("Success: Getting data for the landing page.");
+                LOGGER.debug("Success: Getting data for the landing page.");
                 promise.complete(getPopularDatasetsHandler.result());
               } else {
                 LOGGER.error("Fail: Getting data for the landing page.");
@@ -445,7 +445,7 @@ public class MlayerServiceImpl implements MlayerService {
             });
 
       } else {
-        LOGGER.debug("postgres query failed");
+        LOGGER.error("postgres query failed");
         promise.fail(dbHandler.cause());
       }
     });
@@ -482,7 +482,7 @@ public class MlayerServiceImpl implements MlayerService {
         JsonObject results = dbHandler.result();
         promise.complete(results);
       } else {
-        LOGGER.debug("postgres query failed");
+        LOGGER.error("postgres query failed");
         promise.fail(dbHandler.cause());
       }
     });
