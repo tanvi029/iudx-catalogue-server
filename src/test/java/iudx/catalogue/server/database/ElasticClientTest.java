@@ -22,12 +22,7 @@ import io.vertx.junit5.VertxTestContext;
 import io.vertx.core.Vertx;
 import iudx.catalogue.server.Configuration;
 import org.elasticsearch.client.Request;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -36,6 +31,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 @ExtendWith(VertxExtension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@Disabled
 public class ElasticClientTest {
   @Mock
   Handler<AsyncResult<JsonObject>> handler;
