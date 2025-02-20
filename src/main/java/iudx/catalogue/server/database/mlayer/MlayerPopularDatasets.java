@@ -428,11 +428,17 @@ public class MlayerPopularDatasets {
                       }
                     }
                     int datasetIndex = 0;
+                    int popularDatasetCount = 0;
+                    if (popularDatasets.size() < 6) {
+                      popularDatasetCount = latestDatasets.size();
+                    } else {
+                      popularDatasetCount = POPULAR_DATASET_COUNT;
+                    }
 
-                    while (popularDatasets.size() < POPULAR_DATASET_COUNT) {
+                    while (popularDatasets.size() < popularDatasetCount) {
 
                       if (!frequentlyUsedResourceGroup.contains(
-                          latestDatasets.getJsonObject(datasetIndex).getString("id"))) {
+                              latestDatasets.getJsonObject(datasetIndex).getString("id"))) {
                         popularDatasets.add(latestDatasets.getJsonObject(datasetIndex));
                         datasetIndex++;
                       }

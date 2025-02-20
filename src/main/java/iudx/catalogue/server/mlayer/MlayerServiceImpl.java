@@ -349,7 +349,7 @@ public class MlayerServiceImpl implements MlayerService {
   public MlayerService getMlayerPopularDatasets(
       String instance, Handler<AsyncResult<JsonObject>> handler) {
     String query = GET_HIGH_COUNT_DATASET.replace("$1", databaseTable);
-    LOGGER.debug("postgres query" + query);
+    LOGGER.debug("postgres query " + query);
     postgresService.executeQuery(
         query,
         dbHandler -> {
@@ -379,7 +379,7 @@ public class MlayerServiceImpl implements MlayerService {
                 });
 
           } else {
-            LOGGER.debug("postgres query failed");
+            LOGGER.error("postgres query failed");
             handler.handle(Future.failedFuture(dbHandler.cause()));
           }
         });
