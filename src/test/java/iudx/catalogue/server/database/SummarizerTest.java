@@ -1,9 +1,6 @@
 package iudx.catalogue.server.database;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
@@ -14,6 +11,7 @@ import io.vertx.core.json.JsonObject;
 
 @ExtendWith(VertxExtension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+
 public class SummarizerTest {
 
   private static final Logger LOGGER = LogManager.getLogger(SummarizerTest.class);

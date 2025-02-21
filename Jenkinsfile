@@ -28,7 +28,7 @@ pipeline {
     stage('Unit Tests and CodeCoverage Test'){
       steps{
         script{
-          sh 'cp /home/ubuntu/configs/cat-config-test.json ./configs/config-test.json'
+          sh 'cp /home/ubuntu/configs/5.6.0/cat-config-test.json ./configs/config-test.json'
           sh 'mvn clean test checkstyle:checkstyle pmd:pmd'
         }
         xunit (
@@ -108,7 +108,7 @@ pipeline {
           }
         }
         script{
-            sh 'scp /home/ubuntu/configs/cat-config-test.json ./configs/config-test.json'
+            sh 'scp /home/ubuntu/configs/5.6.0/cat-config-test.json ./configs/config-test.json'
             sh 'mvn test-compile failsafe:integration-test -DskipUnitTests=true -DintTestProxyHost=jenkins-master-priv -DintTestProxyPort=8090 -DintTestHost=jenkins-slave1 -DintTestPort=8080'
         }
         node('built-in') {
