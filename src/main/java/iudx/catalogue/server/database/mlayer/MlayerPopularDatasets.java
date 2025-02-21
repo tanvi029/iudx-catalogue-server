@@ -427,11 +427,13 @@ public class MlayerPopularDatasets {
                         popularDatasets.add(resultItem);
                       }
                     }
-                    int popularDatasetCount = (popularDatasets.size() < 6) ? latestDatasets.size() : POPULAR_DATASET_COUNT;
+                    int popularDatasetCount = (popularDatasets.size() < 6)
+                            ? latestDatasets.size() : POPULAR_DATASET_COUNT;
                     LOGGER.debug("Target popular dataset count: {}", popularDatasetCount);
 
                     int datasetIndex = 0;
-                    while (popularDatasets.size() < popularDatasetCount && datasetIndex < latestDatasets.size()) {
+                    while (popularDatasets.size() < popularDatasetCount
+                            && datasetIndex < latestDatasets.size()) {
                       String datasetId = latestDatasets.getJsonObject(datasetIndex).getString("id");
 
                       if (!frequentlyUsedResourceGroup.contains(datasetId)) {
@@ -443,9 +445,11 @@ public class MlayerPopularDatasets {
                     }
 
                     if (popularDatasets.size() < popularDatasetCount) {
-                      LOGGER.debug("Could not reach the target count of popular datasets. Collected: {}", popularDatasets.size());
+                      LOGGER.debug("Could not reach the target count of popular datasets. "
+                              + "Collected: {}", popularDatasets.size());
                     } else {
-                      LOGGER.debug("Successfully collected {} popular datasets.", popularDatasets.size());
+                      LOGGER.debug("Successfully collected {} popular datasets.",
+                              popularDatasets.size());
                     }
                     JsonArray allRgId = new JsonArray();
                     for (int count = 0; count < popularDatasets.size(); count++) {
