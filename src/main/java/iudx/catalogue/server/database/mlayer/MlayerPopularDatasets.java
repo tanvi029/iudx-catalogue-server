@@ -427,21 +427,25 @@ public class MlayerPopularDatasets {
                         popularDatasets.add(resultItem);
                       }
                     }
+                    int popularDatasetCount = (popularDatasets.size() < 6) ? latestDatasets.size() : POPULAR_DATASET_COUNT;
+                    LOGGER.debug("Target popular dataset count: {}", popularDatasetCount);
+
                     int datasetIndex = 0;
-                    int popularDatasetCount = 0;
-                    if (popularDatasets.size() < 6) {
-                      popularDatasetCount = latestDatasets.size();
-                    } else {
-                      popularDatasetCount = POPULAR_DATASET_COUNT;
+                    while (popularDatasets.size() < popularDatasetCount && datasetIndex < latestDatasets.size()) {
+                      String datasetId = latestDatasets.getJsonObject(datasetIndex).getString("id");
+
+                      if (!frequentlyUsedResourceGroup.contains(datasetId)) {
+                        popularDatasets.add(latestDatasets.getJsonObject(datasetIndex));
+                        LOGGER.debug("Added dataset with id: {}", datasetId);
+                      }
+
+                      datasetIndex++;
                     }
 
-                    while (popularDatasets.size() < popularDatasetCount) {
-
-                      if (!frequentlyUsedResourceGroup.contains(
-                              latestDatasets.getJsonObject(datasetIndex).getString("id"))) {
-                        popularDatasets.add(latestDatasets.getJsonObject(datasetIndex));
-                        datasetIndex++;
-                      }
+                    if (popularDatasets.size() < popularDatasetCount) {
+                      LOGGER.debug("Could not reach the target count of popular datasets. Collected: {}", popularDatasets.size());
+                    } else {
+                      LOGGER.debug("Successfully collected {} popular datasets.", popularDatasets.size());
                     }
                     JsonArray allRgId = new JsonArray();
                     for (int count = 0; count < popularDatasets.size(); count++) {
