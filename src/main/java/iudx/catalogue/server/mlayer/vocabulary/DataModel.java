@@ -149,9 +149,9 @@ public class DataModel {
 
       if (typeArray == null || typeArray.size() < 2) {
         LOGGER.debug(
-            "Skipping entry: 'type' field missing or incomplete. " +
-                "Expected at least two elements where the second specifies the data model " +
-                "association. Entry: {}", result.encode());
+            "Skipping entry: 'type' field missing or incomplete. "
+                + "Expected at least two elements where the second specifies the data model "
+                + "association. Entry: {}", result.encode());
         continue;
       }
 
