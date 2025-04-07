@@ -31,7 +31,7 @@ public class DataModel {
   /**
    * Constructor for DataModel.
    *
-   * @param client The ElasticClient instance
+   * @param client   The ElasticClient instance
    * @param docIndex The index name where data are stored/retrieved in elastic.
    */
   public DataModel(WebClient webClient, ElasticClient client, String docIndex) {
@@ -46,6 +46,7 @@ public class DataModel {
    * @return Future containing JsonObject with class to subclass mappings.
    */
   public Future<JsonObject> getDataModelInfo() {
+    LOGGER.info("Fetching data model information;");
     Promise<JsonObject> promise = Promise.promise();
 
     // Get All datasets by resource group
@@ -57,8 +58,11 @@ public class DataModel {
         .onComplete(
             ar -> {
               if (ar.succeeded()) {
+                LOGGER.info("Successfully retrieved data model information.");
                 promise.complete(ar.result());
               } else {
+                LOGGER.debug("Failed to retrieve data model information: {}",
+                    ar.cause().getMessage());
                 promise.complete(new JsonObject());
               }
             });
@@ -84,7 +88,7 @@ public class DataModel {
             JsonArray results = response.getJsonArray("results");
             promise.complete(results);
           } else {
-            LOGGER.error("Failed Elastic Request: {}", searchHandler.cause().getMessage());
+            LOGGER.debug("Failed Elastic Request: {}", searchHandler.cause().getMessage());
             promise.complete(new JsonArray());
           }
         });
@@ -116,7 +120,10 @@ public class DataModel {
       JsonArray typeArray = result.getJsonArray("type");
 
       if (typeArray == null || typeArray.size() < 2) {
-        LOGGER.error("Invalid type array in result: {}", result.encode());
+        LOGGER.debug(
+            "Skipping entry: 'type' field missing or incomplete. "
+                + "Expected at least two elements where the second specifies the data model "
+                + "association. Entry: {}", result.encode());
         continue;
       }
 
@@ -164,7 +171,7 @@ public class DataModel {
                 semaphore.release();
               });
     } catch (InterruptedException e) {
-      LOGGER.error("Semaphore acquisition interrupted for URL: {}", dmUrl, e);
+      LOGGER.debug("Semaphore acquisition interrupted for URL: {}", dmUrl, e);
       semaphore.release();
       if (pendingRequests.decrementAndGet() == 0) {
         promise.complete(idToSubClassMap);
@@ -175,13 +182,13 @@ public class DataModel {
   /**
    * Handles the response from fetching data model information.
    *
-   * @param dmAr The async result of the HTTP response.
-   * @param classId The class id of the data model.
-   * @param idToClassIdMap The map of id to classId.
+   * @param dmAr            The async result of the HTTP response.
+   * @param classId         The class id of the data model.
+   * @param idToClassIdMap  The map of id to classId.
    * @param idToSubClassMap The JsonObject mapping id to subclass.
    * @param pendingRequests The AtomicInteger tracking pending requests.
-   * @param promise The Promise to complete with idToSubClassMap.
-   * @param dmUrl The URL of the data model.
+   * @param promise         The Promise to complete with idToSubClassMap.
+   * @param dmUrl           The URL of the data model.
    */
   void handleDataModelResponse(
       AsyncResult<HttpResponse<Buffer>> dmAr,
@@ -196,15 +203,15 @@ public class DataModel {
       Buffer dmBody = dmResponse.body();
 
       if (dmBody == null) {
-        LOGGER.error("No response body received for URL: {}", dmUrl);
+        LOGGER.debug("No response body received for URL: {}", dmUrl);
       } else if (!dmResponse.headers().get("content-type").contains("application/json")) {
-        LOGGER.error("Invalid content-type received for URL: {}", dmUrl);
+        LOGGER.debug("Invalid content-type received for URL: {}", dmUrl);
       } else {
         JsonObject dmJson;
         try {
           dmJson = dmBody.toJsonObject();
         } catch (Exception e) {
-          LOGGER.error("Failed to parse JSON response from URL: {}", dmUrl, e);
+          LOGGER.debug("Failed to parse JSON response from URL: {}", dmUrl, e);
           dmJson = null;
         }
 
@@ -227,22 +234,23 @@ public class DataModel {
                         }
                       }
                     } else {
-                      LOGGER.error("Invalid @id in rdfs:subClassOf for class ID: {}", classId);
+                      LOGGER.debug(
+                          "Invalid @id in rdfs:subClassOf for class ID: {}", classId);
                     }
                   } else {
-                    LOGGER.error("Missing rdfs:subClassOf for class ID: {}", classId);
+                    LOGGER.debug("Missing rdfs:subClassOf for class ID: {}", classId);
                   }
                   break;
                 }
               }
             }
           } else {
-            LOGGER.error("Invalid graph array in response for URL: {}", dmUrl);
+            LOGGER.debug("Invalid graph array in response for URL: {}", dmUrl);
           }
         }
       }
     } else {
-      LOGGER.error("Failed to fetch data model for URL: {}", dmUrl, dmAr.cause());
+      LOGGER.debug("Failed to fetch data model for URL: {}", dmUrl, dmAr.cause());
     }
 
     if (pendingRequests.decrementAndGet() == 0) {
