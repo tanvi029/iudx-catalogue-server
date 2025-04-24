@@ -144,8 +144,7 @@ public final class QueryDecoder {
       if (request.containsKey(Q_VALUE) && !request.getString(Q_VALUE).isBlank()) {
         /* constructing db queries */
         String textAttr = request.getString(Q_VALUE);
-        if(request.containsKey(FUZZY) && request.getString(FUZZY).equals("true"))
-        {
+        if (request.containsKey(FUZZY) && request.getString(FUZZY).equals("true")) {
           String textQuery = TEXT_QUERY_FUZZY.replace("$1", textAttr);
 
           mustQuery.add(new JsonObject(textQuery));
@@ -191,8 +190,7 @@ public final class QueryDecoder {
                                         .replace("$2", valueArray.getString(j));
                 shouldQuery.add(new JsonObject(matchQuery));
 
-                if (request.containsKey(FUZZY) && request.getString(FUZZY).equals("true"))
-                {
+                if (request.containsKey(FUZZY) && request.getString(FUZZY).equals("true")) {
                   if (propertyAttrs.getString(i).equals(TAGS)
                           || propertyAttrs.getString(i).equals(DESCRIPTION_ATTR)) {
                     matchQuery =
@@ -216,10 +214,9 @@ public final class QueryDecoder {
                                           .replace("$2", valueArray.getString(j));
                 }
                 shouldQuery.add(new JsonObject(matchQuery));
-                if (request.containsKey(FUZZY) && request.getString(FUZZY).equals("true"))
-                {
+                if (request.containsKey(FUZZY) && request.getString(FUZZY).equals("true")) {
                   if (propertyAttrs.getString(i).equals(LABEL)
-                          ||propertyAttrs.getString(i).equals(INSTANCE)) {
+                          || propertyAttrs.getString(i).equals(INSTANCE)) {
                     matchQuery =
                             FUZZY_MATCH_QUERY
                                     .replace("$1", propertyAttrs.getString(i))
