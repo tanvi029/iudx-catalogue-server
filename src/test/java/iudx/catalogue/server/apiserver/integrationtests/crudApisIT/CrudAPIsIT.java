@@ -563,7 +563,7 @@ public class CrudAPIsIT {
                         .add(new JsonObject()
                                 .put("type", new JsonArray().add("iudx:HTTPAccess"))
                                 .put("protocol", "http")
-                                .put("accessURL", "rs")
+                                .put("accessURL", "rs.io")
                                 .put("port", 8080)
                         )
                 )
