@@ -445,7 +445,7 @@ public class ResourceServer implements Item {
             "[object has missing required properties ([\"accessURL\"])])");
       }
 
-      if(!accessURL.toString().matches(ACCESS_URL_REG_PATTERN)) {
+      if (!accessURL.toString().matches(ACCESS_URL_REG_PATTERN)) {
         throw new IllegalArgumentException(
                 String.format(
                         "[ECMA 262 regex \"%s\" does not match input string \"%s\"]",
