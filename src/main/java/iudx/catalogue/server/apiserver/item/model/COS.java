@@ -10,8 +10,8 @@ public class COS implements Item {
       "^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$";
   private static final String NAME_REGEX = "^[a-zA-Z0-9-]([\\w-. ]*[a-zA-Z0-9- ])?$";
   private static final String COS_URL_REGEX = "^[a-zA-Z0-9-]{2,}(\\.[a-zA-Z0-9-/]{2,}){1,5}$";
-//  private static final String COS_UI_REGEX =
-//      "^https://[a-zA-Z0-9-]{2,}(\\.[a-zA-Z0-9-/]{2,}){1,5}$";
+  //  private static final String COS_UI_REGEX =
+  //      "^https://[a-zA-Z0-9-]{2,}(\\.[a-zA-Z0-9-/]{2,}){1,5}$";
   private final JsonObject requestJson;
   private UUID owner;
   private String cosURL;

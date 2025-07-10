@@ -13,7 +13,8 @@ public class ResourceServer implements Item {
       "^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$";
   private static final String NAME_PATTERN = "^[a-zA-Z0-9]([\\w-. ]*[a-zA-Z0-9 ])?$";
   private static final String REG_URL_PATTERN = "^[a-zA-Z0-9-]{2,}(\\.[a-zA-Z0-9-]{2,}){1,10}$";
-  private static final String ACCESS_URL_REG_PATTERN = "^[a-zA-Z0-9-]{2,}(\\.[a-zA-Z0-9-]{2,}){1,10}$";
+  private static final String ACCESS_URL_REG_PATTERN =
+          "^[a-zA-Z0-9-]{2,}(\\.[a-zA-Z0-9-]{2,}){1,10}$";
   private final JsonObject requestJson;
   private UUID cos;
   private UUID owner;
@@ -447,7 +448,8 @@ public class ResourceServer implements Item {
       if(!accessURL.toString().matches(ACCESS_URL_REG_PATTERN)) {
         throw new IllegalArgumentException(
                 String.format(
-                        "[ECMA 262 regex \"%s\" does not match input string \"%s\"]", ACCESS_URL_REG_PATTERN, accessURL));
+                        "[ECMA 262 regex \"%s\" does not match input string \"%s\"]",
+                        ACCESS_URL_REG_PATTERN, accessURL));
       }
     }
 
