@@ -301,8 +301,8 @@ public class MlayerDataset {
         "resourceServer", "id", "type", "apdURL", "label", "description", "instance",
         "accessPolicy", "cosURL", "dataSample", "dataDescriptor", "@context",
         "dataQualityFile", "dataSampleFile", "resourceType", "resourceServerRegURL",
-        "location", "iudxResourceAPIs", "itemCreatedAt", "nsdi", "icon_base64"
-    ));
+        "location", "iudxResourceAPIs", "itemCreatedAt", "nsdi", "icon_base64",
+        "tags", "ogcResourceInfo"));
     getMlayerDatasetQueryModel.setLimit(MAX_LIMIT);
 
     return getMlayerDatasetQueryModel;
